@@ -1,5 +1,5 @@
 /*
- *  $Id: DmpAlgBgoMip.cc, 2014-09-11 15:46:28 DAMPE $
+ *  $Id: DmpAlgBgoMip.cc, 2014-09-19 13:09:57 DAMPE $
  *  Author(s):
  *    Chi WANG (chiwang@mail.ustc.edu.cn) 11/09/2014
 */
@@ -17,6 +17,7 @@
 #include "DmpDataBuffer.h"
 #include "DmpParameterBgo.h"
 #include "DmpBgoBase.h"
+#include "DmpCore.h"
 
 //-------------------------------------------------------------------
 DmpAlgBgoMip::DmpAlgBgoMip()
@@ -25,6 +26,7 @@ DmpAlgBgoMip::DmpAlgBgoMip()
   fBgoRaw(0),
   fBgoMip(0)
 {
+  gRootIOSvc->Set("Output/Key","mip");
 }
 
 //-------------------------------------------------------------------
@@ -33,7 +35,6 @@ DmpAlgBgoMip::~DmpAlgBgoMip(){
 
 //-------------------------------------------------------------------
 bool DmpAlgBgoMip::Initialize(){
-  gRootIOSvc->Set("OutData/FileName","./"+gRootIOSvc->GetInputFileName()+"_mip.root");
   // read input data
   fEvtHeader = new DmpEvtHeader();
   if(not gDataBuffer->ReadObject("Event/Rdc/EventHeader",fEvtHeader)){
@@ -49,8 +50,8 @@ bool DmpAlgBgoMip::Initialize(){
     return false;
   }
   fBgoMip->UsedFileName = gRootIOSvc->GetInputFileName();
-  gRootIOSvc->PrepareEvent(0);
-  fBgoMip->StartTime = fEvtHeader->GetSecond();
+  gRootIOSvc->PrepareEvent(gCore->GetCurrentEventID());
+  fBgoMip->StartTime = fEvtHeader->fSecond;
   // create Hist map
   short layerNo = DmpParameterBgo::kPlaneNo*2;
   short barNo = DmpParameterBgo::kBarNo;
@@ -60,7 +61,7 @@ bool DmpAlgBgoMip::Initialize(){
         char name[50];
         short gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"BgoMip_%05d-L%02d_B%02d_Dy%02d",gid_dy,l,b,s*10+8);
-        fMipHist.insert(std::make_pair(gid_dy,new TH1F(name,name,1000,-500,1500)));
+        fMipHist.insert(std::make_pair(gid_dy,new TH1F(name,name,3000,0,3000)));
       }
     }
   }
@@ -69,16 +70,35 @@ bool DmpAlgBgoMip::Initialize(){
 
 //-------------------------------------------------------------------
 bool DmpAlgBgoMip::ProcessThisEvent(){
-  short nSignal = fBgoRaw->GetSignalSize();
-  //std::map<short,>
-  short gid = 0,adc = -999,l=-1,b=-1,s=-1;
-  short adcTmp[DmpParameterBgo::kPlaneNo*2][DmpParameterBgo::kSideNo][DmpParameterBgo::kBarNo];
+  short max_adc[DmpParameterBgo::kPlaneNo*2][DmpParameterBgo::kSideNo];
+  short barID_max_adc[DmpParameterBgo::kPlaneNo*2][DmpParameterBgo::kSideNo];
+  for(short layer=0;layer<DmpParameterBgo::kPlaneNo*2;++layer){
+    for(short side =0;side<DmpParameterBgo::kSideNo;++side){
+      max_adc[layer][side] = -9999;
+      barID_max_adc[layer][side] = DmpParameterBgo::kBarNo; // id 0 ~ (kBarNo-1)
+    }
+  }
+//-------------------------------------------------------------------
+  short gid = 0,adc = -999,l=-1,b=-1,s=-1,d=-1;
+  short nSignal = fBgoRaw->fADC.size();
   for(short i=0;i<nSignal;++i){
-    if(fBgoRaw->GetSignal(i,gid,adc)){
-      if(DmpBgoBase::GetDynodeID(gid) == 8){
-        adcTmp[DmpBgoBase::GetLayerID][DmpBgoBase::GetSideID][DmpBgoBase::GetBarID] = adc;
-        fMipHist[gid]->Fill(adc);
+    gid = fBgoRaw->fGlobalDynodeID[i];
+    adc = fBgoRaw->fADC[i];
+    DmpBgoBase::LoadLBSDID(gid,l,b,s,d);
+    if(b == DmpParameterBgo::kBarNo || b == DmpParameterBgo::kBarNo+1){
+      continue;
+    }
+    if(d == 8){
+      if(adc > max_adc[l][s]){
+        barID_max_adc[l][s] = b;
+        max_adc[l][s] = adc;
       }
+    }
+  }
+  for(short layer=0;layer<DmpParameterBgo::kPlaneNo*2;++layer){
+    for(short side =0;side<DmpParameterBgo::kSideNo;++side){
+//std::cout<<"DEBUG: "<<__FILE__<<"("<<__LINE__<<")\tL = "<<layer<<" Side = "<<side<<"\tb = "<<barID_max_adc[layer][side]<<" adc = "<<max_adc[layer][side]<<std::endl; 
+      fMipHist[DmpBgoBase::ConstructGlobalDynodeID(layer,barID_max_adc[layer][side],side,8)]->Fill(max_adc[layer][side]);
     }
   }
   return true;
@@ -87,14 +107,11 @@ bool DmpAlgBgoMip::ProcessThisEvent(){
 //-------------------------------------------------------------------
 bool DmpAlgBgoMip::Finalize(){
   TF1 *gausFit = new TF1("GausFit","gaus",-500,1500);
-  std::string histFileName = gRootIOSvc->GetInputFileName()+"_mip_Hist.root";
+  std::string histFileName = gRootIOSvc->GetOutputPath()+gRootIOSvc->GetOutputStem()+"_Hist.root";
   TFile *histFile = new TFile(histFileName.c_str(),"RECREATE");
-  fBgoMip->StopTime = fEvtHeader->GetSecond();
+  fBgoMip->StopTime = fEvtHeader->fSecond;
   for(std::map<short,TH1F*>::iterator aHist=fMipHist.begin();aHist!=fMipHist.end();++aHist){
       fBgoMip->GlobalDynodeID.push_back(aHist->first);
-// *
-// *  TODO: fit and save output data 
-// *
       float mean = aHist->second->GetMean(), sigma = aHist->second->GetRMS();
       for(short i = 0;i<3;++i){
         gausFit->SetRange(mean-2*sigma,mean+2*sigma);
@@ -113,5 +130,6 @@ bool DmpAlgBgoMip::Finalize(){
   delete histFile;
   return true;
 }
+
 
 
