@@ -33,8 +33,8 @@ public:
   int   StartTime;     // the time of the first event used to cal. ped
   int   StopTime;      // 
   std::vector<short>    GlobalDynodeID;
-  std::vector<float>    Mean;
-  std::vector<float>    Sigma;
+  std::vector<double>   Mean;
+  std::vector<double>   Sigma;
   
   ClassDef(DmpEvtBgoMip,1)
 

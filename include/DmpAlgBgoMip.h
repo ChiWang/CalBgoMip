@@ -12,7 +12,7 @@
 class DmpEvtHeader;
 class DmpEvtBgoRaw;
 class DmpEvtBgoMip;
-class TH1F;
+class TH1D;
 
 class DmpAlgBgoMip : public DmpVAlg{
 /*
@@ -32,7 +32,7 @@ private:
   DmpEvtHeader          *fEvtHeader;
   DmpEvtBgoRaw          *fBgoRaw;
   DmpEvtBgoMip          *fBgoMip;
-  std::map<short,TH1F*>  fMipHist;          // key is global dynode ID
+  std::map<short,TH1D*>  fMipHist;          // key is global dynode ID
 
 };
 
