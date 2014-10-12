@@ -14,47 +14,30 @@ DmpEvtBgoMip::DmpEvtBgoMip(){
 }
 
 //-------------------------------------------------------------------
-DmpEvtBgoMip::DmpEvtBgoMip(const DmpEvtBgoMip &r){
+DmpEvtBgoMip& DmpEvtBgoMip::operator=(const DmpEvtBgoMip &r){
   Reset();
-  UsedFileName = r.UsedFileName;
-  StartTime = r.StartTime;
-  StopTime = r.StopTime;
-  short n = GlobalDynodeID.size();
-  for(size_t i = 0;i<n;++i){
-    GlobalDynodeID.push_back(r.GlobalDynodeID[i]);
-    Mean.push_back(r.Mean[i]);
-    Sigma.push_back(r.Sigma[i]);
-  }
+  GlobalPMTID = r.GlobalPMTID;
+  Mean = r.Mean;
+  Sigma = r.Sigma;
 }
 
 //-------------------------------------------------------------------
-DmpEvtBgoMip::DmpEvtBgoMip(const DmpEvtBgoMip *&r){
+DmpEvtBgoMip::~DmpEvtBgoMip(){
   Reset();
-  UsedFileName = r->UsedFileName;
-  StartTime = r->StartTime;
-  StopTime = r->StopTime;
-  short n = GlobalDynodeID.size();
-  for(size_t i = 0;i<n;++i){
-    GlobalDynodeID.push_back(r->GlobalDynodeID[i]);
-    Mean.push_back(r->Mean[i]);
-    Sigma.push_back(r->Sigma[i]);
-  }
 }
 
 //-------------------------------------------------------------------
-DmpEvtBgoMip::~DmpEvtBgoMip()
-{
-}
-
-//-------------------------------------------------------------------
-void DmpEvtBgoMip::Reset()
-{
-  UsedFileName="NO";
-  StartTime = 0;
-  StopTime  =0xafffffff;
-  GlobalDynodeID.clear();
+void DmpEvtBgoMip::Reset(){
+  GlobalPMTID.clear();
   Mean.clear();
   Sigma.clear();
 }
 
+//-------------------------------------------------------------------
+void DmpEvtBgoMip::LoadFrom(DmpEvtBgoMip *r){
+  Reset();
+  GlobalPMTID = r->GlobalPMTID;
+  Mean = r->Mean;
+  Sigma = r->Sigma;
+}
 

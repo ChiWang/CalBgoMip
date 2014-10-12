@@ -20,7 +20,7 @@ import libDmpBgoMip as DmpBgoMip
 # RootIOSvc options
 DMPSW.RootIOSvc.Set("Input/FileName","DmpRawData.root")
 #DMPSW.RootIOSvc.Set("Output/FileName","./DmpCalBgoMip.root")
-DMPSW.RootIOSvc.Set("Output/WriteList","Calibration/Bgo/Mip")  # split by ;
+DMPSW.RootIOSvc.Set("Output/WriteList","Calibration/Bgo;Metadata/Bgo")  # split by ;
 
 #-------------------------------------------------------------------
 # Creat user's service or algorithm

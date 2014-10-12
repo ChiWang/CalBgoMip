@@ -7,11 +7,13 @@
 #ifndef DmpAlgBgoMip_H
 #define DmpAlgBgoMip_H
 
+#include <map>
 #include "DmpVAlg.h"
 
 class DmpEvtHeader;
 class DmpEvtBgoRaw;
 class DmpEvtBgoMip;
+class DmpMetadata;
 class TH1D;
 
 class DmpAlgBgoMip : public DmpVAlg{
@@ -31,6 +33,9 @@ public:
 private:
   DmpEvtHeader          *fEvtHeader;
   DmpEvtBgoRaw          *fBgoRaw;
+
+private:
+  DmpMetadata           *fMetadata;
   DmpEvtBgoMip          *fBgoMip;
   std::map<short,TH1D*>  fMipHist;          // key is global dynode ID
 
