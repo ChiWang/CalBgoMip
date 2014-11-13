@@ -8,12 +8,11 @@
 #define DmpAlgBgoMip_H
 
 #include <map>
+#include <fstream>
 #include "DmpVAlg.h"
 
 class DmpEvtHeader;
 class DmpEvtBgoRaw;
-class DmpEvtBgoMip;
-class DmpMetadata;
 class TH1D;
 
 class DmpAlgBgoMip : public DmpVAlg{
@@ -35,9 +34,8 @@ private:
   DmpEvtBgoRaw          *fBgoRaw;
 
 private:
-  DmpMetadata           *fMetadata;
-  DmpEvtBgoMip          *fBgoMip;
   std::map<short,TH1D*>  fMipHist;          // key is global dynode ID
+  std::ofstream         OutBgoMipPar;       // Bgo mip parameter
 
 };
 

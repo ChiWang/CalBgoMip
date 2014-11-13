@@ -11,16 +11,17 @@ import libDmpBgoMip as DmpBgoMip
 
 #-------------------------------------------------------------------
 # Global setting
-#DMPSW.Core.Set("FromEvent","500")
-#DMPSW.Core.Set("StartTime","20130101-0000")     # if NOT set, start from launch time
-#DMPSW.Core.Set("StopTime","20160101-0000")      # if NOT set, end at 2113.01.01
-#DMPSW.Core.Set("LogLevel","Warning")      # Value = {Error | Warning | Info | Debug}. If NOT set, will use Info.
+#DMPSW.Core.MaxEventNumber(4)     # default: -1
+#DMPSW.Core.StartTime("2013-01-01 00:00:00")     # default: 2013-01-01 00:00:00
+#DMPSW.Core.StopTime("2016-01-01 00:00:00")      # default: 2053-01-01 00:00:00
+#DMPSW.Core.LogLevel("Debug")      # Value = {Error | Warning | Info | Debug}. default: Info.
+#DMPSW.Core.LogHeader("On") # default: off
 
 #-------------------------------------------------------------------
 # RootIOSvc options
-DMPSW.RootIOSvc.Set("Input/FileName","DmpRawData.root")
-#DMPSW.RootIOSvc.Set("Output/FileName","./DmpCalBgoMip.root")
-DMPSW.RootIOSvc.Set("Output/WriteList","Calibration/Bgo;Metadata/Bgo")  # split by ;
+DMPSW.RootIOSvc.InputFile("DmpRawData.root")
+#DMPSW.RootIOSvc.OutputFile("./DmpCalBgoMip.root")
+DMPSW.RootIOSvc.WriteList("Calibration/Bgo")  # split by ;
 
 #-------------------------------------------------------------------
 # Creat user's service or algorithm

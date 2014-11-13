@@ -13,8 +13,6 @@
 
 #include "DmpEvtHeader.h"
 #include "DmpEvtBgoRaw.h"
-#include "DmpEvtBgoMip.h"
-#include "DmpMetadata.h"
 #include "DmpAlgBgoMip.h"
 #include "DmpDataBuffer.h"
 #include "DmpParameterBgo.h"
@@ -25,13 +23,9 @@
 DmpAlgBgoMip::DmpAlgBgoMip()
  :DmpVAlg("Cal/Bgo/Mip"),
   fEvtHeader(0),
-  fBgoRaw(0),
-  fMetadata(0),
-  fBgoMip(0)
+  fBgoRaw(0)
 {
-  fMetadata = new DmpMetadata();
-  gDataBuffer->RegisterObject("Metadata/Bgo/Mip",fMetadata,"DmpMetadata");
-  gRootIOSvc->Set("Output/Key","mip");
+  gRootIOSvc->SetOutputKey("mip");
 }
 
 //-------------------------------------------------------------------
@@ -52,11 +46,7 @@ bool DmpAlgBgoMip::Initialize(){
     gDataBuffer->LinkRootFile("Event/Raw/Bgo",fBgoRaw);
   }
   // create output data holder
-  fBgoMip = new DmpEvtBgoMip();
-  gDataBuffer->RegisterObject("Calibration/Bgo/Mip",fBgoMip,"DmpEvtBgoMip");
   gRootIOSvc->PrepareEvent(gCore->GetCurrentEventID());
-  fMetadata->SetOption("Parameter/FileName",gRootIOSvc->GetInputFileName());
-  fMetadata->SetOption("StartTime",boost::lexical_cast<std::string>(fEvtHeader->fSecond));
   // create Hist map
   short layerNo = DmpParameterBgo::kPlaneNo*2;
   short barNo = DmpParameterBgo::kBarNo;
@@ -85,15 +75,16 @@ bool DmpAlgBgoMip::ProcessThisEvent(){
   }
 //-------------------------------------------------------------------
   short l=-1,b=-1,s=-1,d=-1;
-  for(std::map<short,double>::iterator it=fBgoRaw->fADC.begin();it!=fBgoRaw->fADC.end();++it){
-    DmpBgoBase::LoadLBSDID(it->first,l,b,s,d);
+  short nSignal = fBgoRaw->fGlobalDynodeID.size();
+  for(short i=0;i<nSignal;++i){
+    DmpBgoBase::LoadLBSDID(fBgoRaw->fGlobalDynodeID[i],l,b,s,d);
     if(b == DmpParameterBgo::kBarNo || b == DmpParameterBgo::kBarNo+1){
       continue;
     }
     if(d == 8){
-      if(it->second > max_adc[l][s]){
+      if(fBgoRaw->fADC[i]> max_adc[l][s]){
         barID_max_adc[l][s] = b;
-        max_adc[l][s] = it->second;
+        max_adc[l][s] = fBgoRaw->fADC[i];
       }
     }
   }
@@ -124,9 +115,9 @@ bool DmpAlgBgoMip::Finalize(){
   TF1 *gausFit = new TF1("GausFit","gaus",-100,2500);
   std::string histFileName = gRootIOSvc->GetOutputPath()+gRootIOSvc->GetOutputStem()+"_Hist.root";
   TFile *histFile = new TFile(histFileName.c_str(),"RECREATE");
-  fMetadata->SetOption("StopTime",boost::lexical_cast<std::string>(fEvtHeader->fSecond));
+  std::string name = "BgoMip_"+gRootIOSvc->GetOutputStem()+".txt";
+  OutBgoMipPar.open(name.c_str(),std::ios::out);
   for(std::map<short,TH1D*>::iterator aHist=fMipHist.begin();aHist!=fMipHist.end();++aHist){
-    fBgoMip->GlobalPMTID.push_back(aHist->first);
     double mean = aHist->second->GetMean(), sigma = aHist->second->GetRMS();
     for(short i = 0;i<3;++i){
       gausFit->SetRange(mean-1.5*sigma,mean+1.5*sigma);
@@ -134,14 +125,14 @@ bool DmpAlgBgoMip::Finalize(){
       mean = gausFit->GetParameter(1);
       sigma = gausFit->GetParameter(2);
     }
-    fBgoMip->Mean.push_back(mean);
-    fBgoMip->Sigma.push_back(sigma);
+    OutBgoMipPar<<aHist->first<<std::setw(10)<<mean<<std::setw(10)<<sigma<<std::endl;
     if((mean > 1600 || mean<-1600) && sigma >300){
        DmpLogWarning<<"GID = "<<aHist->first<<"\tmean = "<<mean<<"\tsigma = "<<sigma<<DmpLogEndl;
     }
     aHist->second->Write();
     delete aHist->second;
   }
+  OutBgoMipPar.close();
   delete histFile;
   return true;
 }
