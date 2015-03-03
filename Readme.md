@@ -1,4 +1,4 @@
-        Algorithm of DMPSW:    DmpAlgCalBgoMip
+        Algorithm of DMPSW:    DmpAlgCalBgoPed
 >--------------------------------------------
 
 Note:

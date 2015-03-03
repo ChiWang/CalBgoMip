@@ -1,0 +1,55 @@
+#! /usr/bin/python
+'''
+ *  $Id: JobOpt_CalMipBar_fromHex, 2015-03-03 18:25:08 DAMPE $
+ *  Author(s):
+ *    Chi WANG (chiwang@mail.ustc.edu.cn) 11/03/2014
+#-------------------------------------------------------------------
+    NOTE:   input data is scientific binary data
+'''
+
+#-------------------------------------------------------------------
+import os
+import glob
+import DMPSW                    # Load DAMPE software
+import libDmpHex2Root as Hex2Root
+import libDmpRec0_RawSignal as DmpRec0
+import libDmpCalMip as DmpCalMip
+
+#-------------------------------------------------------------------
+# Global setting
+#DMPSW.Core.SetEventNumber(4000)     # default: -1
+DMPSW.Core.StartTime("2013-01-01 00:00:00")     # default: 2013-01-01 00:00:00
+DMPSW.Core.StopTime("2016-01-01 00:00:00")      # default: 2053-01-01 00:00:00
+#DMPSW.Core.LogLevel("Debug")      # Value = {Error | Warning | Info | Debug}. default: Info.
+#DMPSW.Core.LogHeader("On") # default: off
+
+#DBase=DMPSW.WorkPath+"/run/BT"
+#-------------------------------------------------------------------
+# RootIOSvc options
+#DMPSW.RootIOSvc.InputPath(DBase+"/sci")
+#newestData=max(glob.iglob(DBase+"/sci/*.frd"),key=os.path.getctime)
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141117_135210.frd")
+DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141101_125310.frd")
+#DMPSW.RootIOSvc.OutputPath(DMPSW.WorkPath+"/run/data/cal/ped")
+#DMPSW.RootIOSvc.SetWriteList("Event/Rdc;Event/Rec0")  # split by ;
+
+#-------------------------------------------------------------------
+# Creat user's service or algorithm
+rdcAlgBT = Hex2Root.DmpAlgHex2Root()
+Rec0 = DmpRec0.DmpAlgRec0_RawSignal()
+calMip = DmpCalMip.DmpAlgCalMipsBar()
+rdcAlgBT.SetConnector("Psd",DMPSW.WorkPath+"/share/Connector/Psd/EQM")
+rdcAlgBT.SetConnector("Bgo",DMPSW.WorkPath+"/share/Connector/Bgo/EQM")
+
+#-------------------------------------------------------------------
+# Append user's service or algorithm into Kernel
+DMPSW.AlgMgr.Append(rdcAlgBT)
+DMPSW.AlgMgr.Append(Rec0)
+DMPSW.AlgMgr.Append(calMip)
+
+#-------------------------------------------------------------------
+# Run job
+DMPSW.Core.Initialize()
+DMPSW.Core.Run()
+DMPSW.Core.Finalize()
+

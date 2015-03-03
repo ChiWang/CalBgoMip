@@ -1,0 +1,40 @@
+#! /usr/bin/python
+'''
+ *  $Id: JobOpt_CalMipBar_fromRoot, 2015-03-03 18:25:02 DAMPE $
+ *  Author(s):
+ *    Chi WANG (chiwang@mail.ustc.edu.cn) 11/03/2014
+#-------------------------------------------------------------------
+    NOTE:   input data is scientific root data(after Hex2Root)
+'''
+
+#-------------------------------------------------------------------
+import os
+import DMPSW                    # Load DAMPE software
+import libDmpCalMip as DmpCalMip
+
+#-------------------------------------------------------------------
+# Global setting
+#DMPSW.Core.SetEventNumber(4)     # default: -1
+DMPSW.Core.SetStartTime("2014-11-18 17:42:00")     # default: 2013-01-01 00:00:00
+DMPSW.Core.SetStopTime("2014-11-18 18:20:03")      # default: 2053-01-01 00:00:00
+#DMPSW.Core.LogLevel("Debug")      # Value = {Error | Warning | Info | Debug}. default: Info.
+#DMPSW.Core.LogHeader("On") # default: off
+
+#-------------------------------------------------------------------
+# RootIOSvc options
+#DMPSW.RootIOSvc.InputPath(os.environ["DMPSWWORK"]+"/data/sci")
+DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_181842-RawSignal.root")
+#DMPSW.RootIOSvc.WriteList("Calibration/Bgo")  # split by ;
+#DMPSW.RootIOSvc.OutputPath(os.environ["DMPSWWORK"]+"/run/data/cal/mip")
+
+#-------------------------------------------------------------------
+# Creat user's service or algorithm
+calMip = DmpCalMip.DmpAlgCalMipsBar()
+DMPSW.AlgMgr.Append(calMip)
+
+#-------------------------------------------------------------------
+# Run job
+DMPSW.Core.Initialize()
+DMPSW.Core.Run()
+DMPSW.Core.Finalize()
+

@@ -2,6 +2,10 @@
 *.slo
 *.lo
 *.o
+*.root
+*.ped
+*.error
+*.frd
 
 # Compiled Dynamic libraries
 *.os
