@@ -37,7 +37,7 @@ DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141101_125310.frd")
 # Creat user's service or algorithm
 rdcAlgBT = Hex2Root.DmpAlgHex2Root()
 Rec0 = DmpRec0.DmpAlgRec0_RawSignal()
-calMip = DmpCalMip.DmpAlgCalMipsBar()
+calMip = DmpCalMip.DmpAlgCalibrationMips()
 rdcAlgBT.SetConnector("Psd",DMPSW.WorkPath+"/share/Connector/Psd/EQM")
 rdcAlgBT.SetConnector("Bgo",DMPSW.WorkPath+"/share/Connector/Bgo/EQM")
 

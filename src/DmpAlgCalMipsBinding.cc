@@ -5,11 +5,13 @@
 */
 
 #include <boost/python.hpp>
-#include "DmpAlgCalMipsBar.h"
+#include "DmpAlgCalibrationMips.h"
 
 BOOST_PYTHON_MODULE(libDmpCalMip){
   using namespace boost::python;
 
-  class_<DmpAlgCalMipsBar,boost::noncopyable,bases<DmpVAlg> >("DmpAlgCalMipsBar",init<>());
+  class_<DmpAlgCalibrationMips,boost::noncopyable,bases<DmpVAlg> >("DmpAlgCalibrationMips",init<>())
+    .def("SetCalibrationMode", &DmpAlgCalibrationMips::SetCalibrationMode)
+    ;
 }
 
