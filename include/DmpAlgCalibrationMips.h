@@ -26,14 +26,9 @@ public:
   DmpAlgCalibrationMips();
   ~DmpAlgCalibrationMips();
 
-  void SetCalibrationMode(int i=0);    // 1: only dynode; 2: only bar;  0: both
   bool Initialize();
   bool ProcessThisEvent();
   bool Finalize();
-
-private:
-  void _calBarOrStrip();
-  void _calDynode();
 
 private:
   DmpEvtHeader          *fEvtHeader;
@@ -54,9 +49,6 @@ private:
 
   std::map<short,TH1D*>  fPsdMipsHist_Dy;        // key is global dynode ID
   std::ofstream         o_MipData_PsdDy;      //
-
-  bool  fEnableCaliDynode;  // calibraiton dynode
-  bool  fEnableCaliBar;     // calibration 2 sides, multiply 2 ADC
 
 };
 
