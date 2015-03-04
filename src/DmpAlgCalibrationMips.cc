@@ -25,6 +25,8 @@
 #include "DmpTimeConvertor.h"
 #include "MyFunctions.h"
 
+#define  Psd_Bgo_Gap 300
+
 //-------------------------------------------------------------------
 DmpAlgCalibrationMips::DmpAlgCalibrationMips()
  :DmpVAlg("Cal/Bgo/Ped"),
@@ -32,7 +34,10 @@ DmpAlgCalibrationMips::DmpAlgCalibrationMips()
   fEvtBgo(0),
   fEvtPsd(0),
   fFirstEvtTime(-1),
-  fLastEvtTime(-1)
+  fLastEvtTime(-1),
+  fRange_lo(200),
+  fRange_hi(1400),
+  fBinNo(200)
 {
   gRootIOSvc->SetOutputKey("CalMip");
 }
@@ -68,11 +73,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid = DmpBgoBase::ConstructGlobalBarID(l,b);
       snprintf(name,50,"BgoMip_%05d-L%02d_B%02d",gid,l,b);
-      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,300,0,1500)));
+      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi)));
       for(short s=0;s<DmpParameterBgo::kSideNo;++s){
         gid = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"BgoMip_%05d-L%02d_B%02d_Dy%02d",gid,l,b,s*10+8);
-        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,300,0,1500)));
+        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi)));
       }
     }
   }
@@ -81,11 +86,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid = DmpPsdBase::ConstructGlobalStripID(l,b);
       snprintf(name,50,"PsdMip_%05d-L%02d_S%02d",gid,l,b);
-      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,200,0,1000)));
+      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi-Psd_Bgo_Gap)));
       for(short s=0;s<DmpParameterPsd::kSideNo;++s){
         gid = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"PsdMip_%05d-L%02d_S%02d_Dy%02d",gid,l,b,s*10+8);
-        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,200,0,1000)));
+        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi-Psd_Bgo_Gap)));
       }
     }
   }
@@ -120,7 +125,7 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
       }
       int i0 = s0dy8 - fEvtBgo->fGlobalDynodeID.begin();
       int i1 = s1dy8 - fEvtBgo->fGlobalDynodeID.begin();
-      if(fEvtBgo->fADC.at(i0) > 1500 || fEvtBgo->fADC.at(i1) > 1500){
+      if(fEvtBgo->fADC.at(i0) < fRange_lo || fEvtBgo->fADC.at(i0) > fRange_hi || fEvtBgo->fADC.at(i1) < fRange_lo || fEvtBgo->fADC.at(i1) > fRange_hi){
         continue;
       }
       fBgoMipsHist_Dy[gid_dy_s0]->Fill(fEvtBgo->fADC.at(i0));
@@ -142,7 +147,7 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
       }
       int i0 = s0dy8 - fEvtPsd->fGlobalDynodeID.begin();
       int i1 = s1dy8 - fEvtPsd->fGlobalDynodeID.begin();
-      if(fEvtPsd->fADC.at(i0) > 1500 || fEvtPsd->fADC.at(i1) > 1500){
+      if(fEvtPsd->fADC.at(i0) < fRange_lo || fEvtPsd->fADC.at(i0) > fRange_hi-Psd_Bgo_Gap || fEvtPsd->fADC.at(i1) < fRange_lo || fEvtPsd->fADC.at(i1) > fRange_hi-Psd_Bgo_Gap){
         continue;
       }
       fPsdMipsHist_Dy[gid_dy_s0]->Fill(fEvtPsd->fADC.at(i0));
@@ -157,9 +162,9 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
 //-------------------------------------------------------------------
 bool DmpAlgCalibrationMips::Finalize(){
   TF1 *lxg_f = gMyFunctions->GetLanGau();
-  double sv[4]={2,300,5000,20};
-  double pllo[4]={1,100,1000,2};
-  double plhi[4]={100,1000,100000,200};
+  double sv[4]={20,500,5000,50};
+  double pllo[4]={10,fRange_lo,1000,10};
+  double plhi[4]={100,fRange_hi,100000,200};
   lxg_f->SetParameters(sv);
   for (int i=0; i<4; ++i) {
     lxg_f->SetParLimits(i, pllo[i], plhi[i]);
@@ -262,4 +267,5 @@ bool DmpAlgCalibrationMips::Finalize(){
   delete histFile;
   return true;
 }
+
 

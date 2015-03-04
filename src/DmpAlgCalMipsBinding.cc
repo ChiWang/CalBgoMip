@@ -11,6 +11,7 @@ BOOST_PYTHON_MODULE(libDmpCalMip){
   using namespace boost::python;
 
   class_<DmpAlgCalibrationMips,boost::noncopyable,bases<DmpVAlg> >("DmpAlgCalibrationMips",init<>())
+    .def("SetHistParameters",    &DmpAlgCalibrationMips::SetHistParameters)
     ;
 }
 

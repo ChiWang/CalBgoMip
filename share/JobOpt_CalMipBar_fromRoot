@@ -15,8 +15,8 @@ import libDmpCalMip as DmpCalMip
 #-------------------------------------------------------------------
 # Global setting
 #DMPSW.Core.SetEventNumber(4)     # default: -1
-#DMPSW.Core.SetStartTime("2014-11-18 17:42:00")     # default: 2013-01-01 00:00:00
-#DMPSW.Core.SetStopTime("2014-11-18 18:20:03")      # default: 2053-01-01 00:00:00
+DMPSW.Core.SetStartTime("2014-11-18 20:33:00")     # default: 2013-01-01 00:00:00
+DMPSW.Core.SetStopTime("2014-11-18 21:44:10")      # default: 2053-01-01 00:00:00
 #DMPSW.Core.LogLevel("Debug")      # Value = {Error | Warning | Info | Debug}. default: Info.
 #DMPSW.Core.LogHeader("On") # default: off
 
@@ -34,6 +34,7 @@ DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_214521-RawSignal.root")  # muo
 #-------------------------------------------------------------------
 # Creat user's service or algorithm
 calMip = DmpCalMip.DmpAlgCalibrationMips()
+calMip.SetHistParameters(100,200,1400)
 DMPSW.AlgMgr.Append(calMip)
 
 #-------------------------------------------------------------------

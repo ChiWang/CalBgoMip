@@ -26,6 +26,7 @@ public:
   DmpAlgCalibrationMips();
   ~DmpAlgCalibrationMips();
 
+  void SetHistParameters(int nBin,double low,double high){fRange_lo = low;fRange_hi = high;fBinNo = nBin;}
   bool Initialize();
   bool ProcessThisEvent();
   bool Finalize();
@@ -49,6 +50,11 @@ private:
 
   std::map<short,TH1D*>  fPsdMipsHist_Dy;        // key is global dynode ID
   std::ofstream         o_MipData_PsdDy;      //
+
+private:
+  double    fRange_lo;      //
+  double    fRange_hi;      //
+  int       fBinNo;         // bin number
 
 };
 
