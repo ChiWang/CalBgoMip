@@ -1,6 +1,6 @@
 #! /usr/bin/python
 '''
- *  $Id: JobOpt_CalMipBar_fromRoot, 2015-03-03 18:25:02 DAMPE $
+ *  $Id: JobOpt_CalMipBar_fromRoot, 2015-03-04 12:31:49 DAMPE $
  *  Author(s):
  *    Chi WANG (chiwang@mail.ustc.edu.cn) 11/03/2014
 #-------------------------------------------------------------------
@@ -22,11 +22,12 @@ import libDmpCalMip as DmpCalMip
 
 #-------------------------------------------------------------------
 # RootIOSvc options
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_163049-RawSignal.root")
 #DMPSW.RootIOSvc.InputPath(os.environ["DMPSWWORK"]+"/data/sci")
-DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_214521-RawSignal.root")
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_202446-RawSignal.root")
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_181842-RawSignal.root")
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141030_125252-RawSignal.root")
+DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_214521-RawSignal.root")  # muon many
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_202446-RawSignal.root")  # muon many
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_181842-RawSignal.root")  # muon P43_68
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141030_125252-RawSignal.root")  # muon P93_93
 #DMPSW.RootIOSvc.WriteList("Calibration/Bgo")  # split by ;
 #DMPSW.RootIOSvc.OutputPath(os.environ["DMPSWWORK"]+"/run/data/cal/mip")
 

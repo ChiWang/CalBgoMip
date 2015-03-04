@@ -28,23 +28,47 @@ DMPSW.Core.SetStopTime("2014-11-18 18:20:03")      # default: 2053-01-01 00:00:0
 # RootIOSvc options
 #DMPSW.RootIOSvc.InputPath(DBase+"/sci")
 #newestData=max(glob.iglob(DBase+"/sci/*.frd"),key=os.path.getctime)
-DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_181842.frd")
+inputFileName = "./A2Data00_20141118_181842.frd"
+DMPSW.RootIOSvc.SetInputFile(inputFileName)
 #DMPSW.RootIOSvc.OutputPath(DMPSW.WorkPath+"/run/data/cal/ped")
 DMPSW.RootIOSvc.SetWriteList("Event/Rdc;Event/Rec0")  # split by ;
 
 #-------------------------------------------------------------------
 # Creat user's service or algorithm
 rdcAlgBT = Hex2Root.DmpAlgHex2Root()
-Rec0 = DmpRec0.DmpAlgRec0_RawSignal()
-calMip = DmpCalMip.DmpAlgCalibrationMips()
 rdcAlgBT.SetConnector("Psd",DMPSW.WorkPath+"/share/Connector/Psd/EQM")
 rdcAlgBT.SetConnector("Bgo",DMPSW.WorkPath+"/share/Connector/Bgo/EQM")
+Rec0 = DmpRec0.DmpAlgRec0_RawSignal()
+calMip = DmpCalMip.DmpAlgCalibrationMips()
 
 #-------------------------------------------------------------------
 # Append user's service or algorithm into Kernel
 DMPSW.AlgMgr.Append(rdcAlgBT)
 DMPSW.AlgMgr.Append(Rec0)
 DMPSW.AlgMgr.Append(calMip)
+
+def findPedFile(path,ID,ref_time):
+        ped_time="0"
+        ped_fn="NO"
+        fNamoes=os.listdir(path)
+        for fn in fNamoes:
+                if (".ped" not in fn) or (ID not in fn):
+                        continue
+                fn_time = fn[13:21]
+                fn_time = fn_time+fn[22:28]
+                if (int(fn_time) <= int(ref_time) and int(fn_time) > int(ped_time)):
+                        ped_time = fn_time
+                        ped_fn = fn
+        return ped_fn
+
+inputStem = inputFileName.split("/")
+inputStem = inputStem[-1]
+inf_time = inputStem[9:17]
+inf_time = inf_time+inputStem[18:24]
+pedPath ="/home/chi/dmpwork/MyData/Calibration/DAMPE/Pedestal/"
+for iD in ["Bgo","Psd","Stk","Nud"]:
+        pedf = findPedFile(pedPath,iD,inf_time)
+        Rec0.SetPedestalFile(iD,pedPath+pedf)
 
 #-------------------------------------------------------------------
 # Run job

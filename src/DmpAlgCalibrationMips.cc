@@ -68,11 +68,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid = DmpBgoBase::ConstructGlobalBarID(l,b);
       snprintf(name,50,"BgoMip_%05d-L%02d_B%02d",gid,l,b);
-      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,750,0,1500)));
+      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,300,0,1500)));
       for(short s=0;s<DmpParameterBgo::kSideNo;++s){
         gid = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"BgoMip_%05d-L%02d_B%02d_Dy%02d",gid,l,b,s*10+8);
-        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,750,0,1500)));
+        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,300,0,1500)));
       }
     }
   }
@@ -81,11 +81,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid = DmpPsdBase::ConstructGlobalStripID(l,b);
       snprintf(name,50,"PsdMip_%05d-L%02d_S%02d",gid,l,b);
-      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,600,0,1200)));
+      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,200,0,1000)));
       for(short s=0;s<DmpParameterPsd::kSideNo;++s){
         gid = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"PsdMip_%05d-L%02d_S%02d_Dy%02d",gid,l,b,s*10+8);
-        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,600,0,1200)));
+        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,200,0,1000)));
       }
     }
   }
@@ -157,6 +157,13 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
 //-------------------------------------------------------------------
 bool DmpAlgCalibrationMips::Finalize(){
   TF1 *lxg_f = gMyFunctions->GetLanGau();
+  double sv[4]={2,300,5000,20};
+  double pllo[4]={1,100,1000,2};
+  double plhi[4]={100,1000,100000,200};
+  lxg_f->SetParameters(sv);
+  for (int i=0; i<4; ++i) {
+    lxg_f->SetParLimits(i, pllo[i], plhi[i]);
+  }
   std::string histFileName = gRootIOSvc->GetOutputPath()+gRootIOSvc->GetInputStem()+"_MipsBarHist.root";
   TFile *histFile = new TFile(histFileName.c_str(),"RECREATE");
 
@@ -175,7 +182,7 @@ bool DmpAlgCalibrationMips::Finalize(){
   o_MipData_BgoDy<<DmpTimeConvertor::Second2Date(fFirstEvtTime)<<std::endl;
   o_MipData_BgoDy<<DmpTimeConvertor::Second2Date(fLastEvtTime)<<std::endl;
   o_MipData_BgoDy<<"globalDyID\tlayer\tbar\tside\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
-  lxg_f->SetRange(80,2000);
+  lxg_f->SetRange(100,1500);
   short layerNo = DmpParameterBgo::kPlaneNo*2;
   short gid_bar = -1;
   short gid_dy = -1;
@@ -183,7 +190,7 @@ bool DmpAlgCalibrationMips::Finalize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_bar = DmpBgoBase::ConstructGlobalBarID(l,b);
       o_MipData_BgoBar<<gid_bar<<"\t"<<l<<"\t"<<b<<"\t";
-      //fBgoMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQ");
+      fBgoMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
         o_MipData_BgoBar<<"\t"<<lxg_f->GetParameter(ip);
       }
@@ -194,7 +201,7 @@ bool DmpAlgCalibrationMips::Finalize(){
       for(short s = 0;s<DmpParameterBgo::kSideNo;++s){
         gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         o_MipData_BgoDy<<gid_dy<<"\t"<<l<<"\t"<<b<<"\t"<<s<<"\t";
-        //fBgoMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQ");
+        fBgoMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
           o_MipData_BgoDy<<"\t"<<lxg_f->GetParameter(ip);
         }
@@ -222,13 +229,13 @@ bool DmpAlgCalibrationMips::Finalize(){
   o_MipData_PsdDy<<DmpTimeConvertor::Second2Date(fFirstEvtTime)<<std::endl;
   o_MipData_PsdDy<<DmpTimeConvertor::Second2Date(fLastEvtTime)<<std::endl;
   o_MipData_PsdDy<<"globalDynodeID\tlayer\tstrip\tside\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
-  lxg_f->SetRange(50,1200);
+  lxg_f->SetRange(100,1000);
   layerNo = DmpParameterPsd::kPlaneNo*2;
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid_bar = DmpPsdBase::ConstructGlobalStripID(l,b);
       o_MipData_PsdBar<<gid_bar<<"\t"<<l<<"\t"<<b<<"\t";
-      //fPsdMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQ");
+      fPsdMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
         o_MipData_PsdBar<<"\t"<<lxg_f->GetParameter(ip);
       }
@@ -239,7 +246,7 @@ bool DmpAlgCalibrationMips::Finalize(){
       for(short s = 0;s<DmpParameterPsd::kSideNo;++s){
         gid_dy = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         o_MipData_PsdDy<<gid_dy<<"\t"<<l<<"\t"<<b<<"\t"<<s<<"\t";
-        //fPsdMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQ");
+        fPsdMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
           o_MipData_PsdDy<<"\t"<<lxg_f->GetParameter(ip);
         }
