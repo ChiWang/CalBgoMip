@@ -264,7 +264,6 @@ bool DmpAlgCalibrationMips::Finalize(){
   o_MipData_PsdBar.close();
   o_MipData_PsdDy.close();
 
-  delete histFile;
   return true;
 }
 
