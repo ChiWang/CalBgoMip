@@ -34,7 +34,7 @@ DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_214521-RawSignal.root")  # muo
 #-------------------------------------------------------------------
 # Creat user's service or algorithm
 calMip = DmpCalMip.DmpAlgCalibrationMips()
-calMip.SetHistParameters(100,200,1400)
+calMip.SetHistParameters(100,100,1600)
 DMPSW.AlgMgr.Append(calMip)
 
 #-------------------------------------------------------------------

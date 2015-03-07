@@ -10,8 +10,8 @@
 
 #include "TH1D.h"
 #include "TF1.h"
-#include "TFile.h"
 #include "TMath.h"
+#include "TFile.h"
 
 #include "DmpEvtHeader.h"
 #include "DmpEvtBgoRaw.h"
@@ -29,17 +29,17 @@
 
 //-------------------------------------------------------------------
 DmpAlgCalibrationMips::DmpAlgCalibrationMips()
- :DmpVAlg("Cal/Bgo/Ped"),
+ :DmpVAlg("DmpAlgCalibrationMips"),
   fEvtHeader(0),
   fEvtBgo(0),
   fEvtPsd(0),
   fFirstEvtTime(-1),
   fLastEvtTime(-1),
-  fRange_lo(200),
-  fRange_hi(1400),
+  fRange_lo(100),
+  fRange_hi(1600),
   fBinNo(200)
 {
-  gRootIOSvc->SetOutputKey("CalMip");
+  gRootIOSvc->SetOutFileKey("CalMip");
 }
 
 //-------------------------------------------------------------------
@@ -170,7 +170,7 @@ bool DmpAlgCalibrationMips::Finalize(){
     lxg_f->SetParLimits(i, pllo[i], plhi[i]);
   }
   std::string histFileName = gRootIOSvc->GetOutputPath()+gRootIOSvc->GetInputStem()+"_MipsBarHist.root";
-  TFile *histFile = new TFile(histFileName.c_str(),"RECREATE");
+  TFile *histFile = gRootIOSvc->GetOutputRootFile();//new TFile(histFileName.c_str(),"RECREATE");
 
   // create output txtfile      BGO
   histFile->mkdir("Bgo");
