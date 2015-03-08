@@ -13,7 +13,6 @@
 #include "TMath.h"
 #include "TFile.h"
 
-#include "DmpEvtHeader.h"
 #include "DmpEvtBgoRaw.h"
 #include "DmpAlgCalibrationMips.h"
 #include "DmpDataBuffer.h"
@@ -30,11 +29,8 @@
 //-------------------------------------------------------------------
 DmpAlgCalibrationMips::DmpAlgCalibrationMips()
  :DmpVAlg("DmpAlgCalibrationMips"),
-  fEvtHeader(0),
   fEvtBgo(0),
   fEvtPsd(0),
-  fFirstEvtTime(-1),
-  fLastEvtTime(-1),
   fRange_lo(100),
   fRange_hi(1600),
   fBinNo(200)
@@ -50,11 +46,6 @@ DmpAlgCalibrationMips::~DmpAlgCalibrationMips(){
 bool DmpAlgCalibrationMips::Initialize(){
   // read input data
   std::string inpath = "Event/Rec0/";
-  fEvtHeader = dynamic_cast<DmpEvtHeader*>(gDataBuffer->ReadObject(inpath+"EventHeader"));
-  if(0 == fEvtHeader){
-    fEvtHeader = new DmpEvtHeader();
-    gDataBuffer->LinkRootFile(inpath+"EventHeader",fEvtHeader);
-  }
   fEvtBgo = dynamic_cast<DmpEvtBgoRaw*>(gDataBuffer->ReadObject(inpath+"Bgo"));
   if(0 == fEvtBgo){
     fEvtBgo = new DmpEvtBgoRaw();
@@ -100,17 +91,9 @@ bool DmpAlgCalibrationMips::Initialize(){
 
 //-------------------------------------------------------------------
 bool DmpAlgCalibrationMips::ProcessThisEvent(){
-  if(fEvtHeader->GetSecond() < gCore->GetStartTime() || fEvtHeader->GetSecond() > gCore->GetStopTime()){
+  if(gCore->GetEventHeader()->EnabledPeriodTrigger() && gCore->GetEventHeader()->GeneratedPeriodTrigger()){
     return false;
   }
-  if(fEvtHeader->EnabledPeriodTrigger() && fEvtHeader->GeneratedPeriodTrigger()){
-    return false;
-  }
-  if(fFirstEvtTime == -1){
-    fFirstEvtTime = fEvtHeader->GetSecond();
-  }
-  fLastEvtTime = fEvtHeader->GetSecond();
-
   //-------------------------------------------------------------------
   // bgo Mip bar
   static short bgo_layerNo = DmpParameterBgo::kPlaneNo*2;
@@ -178,14 +161,12 @@ bool DmpAlgCalibrationMips::Finalize(){
   std::string name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip1";
   o_MipData_BgoBar.open(name.c_str(),std::ios::out);
   o_MipData_BgoBar<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_BgoBar<<DmpTimeConvertor::Second2Date(fFirstEvtTime)<<std::endl;
-  o_MipData_BgoBar<<DmpTimeConvertor::Second2Date(fLastEvtTime)<<std::endl;
+  o_MipData_BgoBar<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
   o_MipData_BgoBar<<"globalBarID\tlayer\tbar\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
   name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip";
   o_MipData_BgoDy.open(name.c_str(),std::ios::out);
   o_MipData_BgoDy<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_BgoDy<<DmpTimeConvertor::Second2Date(fFirstEvtTime)<<std::endl;
-  o_MipData_BgoDy<<DmpTimeConvertor::Second2Date(fLastEvtTime)<<std::endl;
+  o_MipData_BgoDy<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
   o_MipData_BgoDy<<"globalDyID\tlayer\tbar\tside\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
   lxg_f->SetRange(100,1500);
   short layerNo = DmpParameterBgo::kPlaneNo*2;
@@ -225,14 +206,12 @@ bool DmpAlgCalibrationMips::Finalize(){
   name = "Psd_"+gRootIOSvc->GetInputStem()+".mip1";
   o_MipData_PsdBar.open(name.c_str(),std::ios::out);
   o_MipData_PsdBar<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_PsdBar<<DmpTimeConvertor::Second2Date(fFirstEvtTime)<<std::endl;
-  o_MipData_PsdBar<<DmpTimeConvertor::Second2Date(fLastEvtTime)<<std::endl;
+  o_MipData_PsdBar<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
   o_MipData_PsdBar<<"globalStripID\tlayer\tstrip\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
   name = "Psd_"+gRootIOSvc->GetInputStem()+".mip";
   o_MipData_PsdDy.open(name.c_str(),std::ios::out);
   o_MipData_PsdDy<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_PsdDy<<DmpTimeConvertor::Second2Date(fFirstEvtTime)<<std::endl;
-  o_MipData_PsdDy<<DmpTimeConvertor::Second2Date(fLastEvtTime)<<std::endl;
+  o_MipData_PsdDy<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
   o_MipData_PsdDy<<"globalDynodeID\tlayer\tstrip\tside\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
   lxg_f->SetRange(100,1000);
   layerNo = DmpParameterPsd::kPlaneNo*2;

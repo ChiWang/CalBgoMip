@@ -12,7 +12,6 @@
 #include "DmpVAlg.h"
 #include "DmpEvtPsdRaw.h"
 
-class DmpEvtHeader;
 class DmpEvtBgoRaw;
 //class DmpEvtPsdRaw;
 class TH1D;
@@ -32,12 +31,8 @@ public:
   bool Finalize();
 
 private:
-  DmpEvtHeader          *fEvtHeader;
   DmpEvtBgoRaw          *fEvtBgo;   // without pedetal, pure signal
   DmpEvtPsdRaw          *fEvtPsd;
-
-  int                   fFirstEvtTime;      // unit second
-  int                   fLastEvtTime;       // unit second
 
   std::map<short,TH1D*>  fBgoMipsHist_Bar;       // key is global bar ID
   std::ofstream         o_MipData_BgoBar;      //
