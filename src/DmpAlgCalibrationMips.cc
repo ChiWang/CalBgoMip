@@ -18,6 +18,7 @@
 #include "DmpDataBuffer.h"
 #include "DmpParameterBgo.h"
 #include "DmpParameterPsd.h"
+#include "DmpLoadParameters.h"
 #include "DmpBgoBase.h"
 #include "DmpPsdBase.h"
 #include "DmpCore.h"
@@ -158,20 +159,21 @@ bool DmpAlgCalibrationMips::Finalize(){
   // create output txtfile      BGO
   histFile->mkdir("Bgo");
   histFile->cd("Bgo");
-  std::string name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip1";
+  std::string name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip";
   o_MipData_BgoBar.open(name.c_str(),std::ios::out);
-  o_MipData_BgoBar<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_BgoBar<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_BgoBar<<"globalBarID\tlayer\tbar\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
-  name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip";
+  o_MipData_BgoBar<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
+  o_MipData_BgoBar<<"StartTime"<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_BgoBar<<Mark_D<<std::endl;
+  name = "Bgo_"+gRootIOSvc->GetInputStem()+"Dy8.mip";
   o_MipData_BgoDy.open(name.c_str(),std::ios::out);
-  o_MipData_BgoDy<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_BgoDy<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_BgoDy<<"globalDyID\tlayer\tbar\tside\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
+  o_MipData_BgoDy<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
+  o_MipData_BgoDy<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_BgoDy<<Mark_D<<std::endl;
   lxg_f->SetRange(100,1500);
   short layerNo = DmpParameterBgo::kPlaneNo*2;
   short gid_bar = -1;
   short gid_dy = -1;
+  double mpv = 0;
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_bar = DmpBgoBase::ConstructGlobalBarID(l,b);
@@ -180,6 +182,8 @@ bool DmpAlgCalibrationMips::Finalize(){
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
         o_MipData_BgoBar<<"\t"<<lxg_f->GetParameter(ip);
       }
+      mpv = lxg_f->GetParameter(1);
+      o_MipData_BgoBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
       o_MipData_BgoBar<<std::endl;
       fBgoMipsHist_Bar[gid_bar]->Write();
       delete fBgoMipsHist_Bar[gid_bar];
@@ -189,30 +193,34 @@ bool DmpAlgCalibrationMips::Finalize(){
         o_MipData_BgoDy<<gid_dy<<"\t"<<l<<"\t"<<b<<"\t"<<s<<"\t";
         fBgoMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-          o_MipData_BgoDy<<"\t"<<lxg_f->GetParameter(ip);
+          o_MipData_BgoDy<<"\t\t"<<lxg_f->GetParameter(ip);
         }
+        mpv = lxg_f->GetParameter(1);
+        o_MipData_BgoDy<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
         o_MipData_BgoDy<<std::endl;
         fBgoMipsHist_Dy[gid_dy]->Write();
         delete fBgoMipsHist_Dy[gid_dy];
       }
     }
   }
+  o_MipData_BgoBar<<Mark_N<<std::endl;
   o_MipData_BgoBar.close();
+  o_MipData_BgoDy<<Mark_N<<std::endl;
   o_MipData_BgoDy.close();
 
   // create output txtfile      PSD
   histFile->mkdir("Psd");
   histFile->cd("Psd");
-  name = "Psd_"+gRootIOSvc->GetInputStem()+".mip1";
+  name= "Psd_"+gRootIOSvc->GetInputStem()+".mip";
   o_MipData_PsdBar.open(name.c_str(),std::ios::out);
-  o_MipData_PsdBar<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_PsdBar<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_PsdBar<<"globalStripID\tlayer\tstrip\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
-  name = "Psd_"+gRootIOSvc->GetInputStem()+".mip";
+  o_MipData_PsdBar<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
+  o_MipData_PsdBar<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_PsdBar<<Mark_D<<std::endl;
+  name = "Psd_"+gRootIOSvc->GetInputStem()+"Dy8.mip";
   o_MipData_PsdDy.open(name.c_str(),std::ios::out);
-  o_MipData_PsdDy<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_PsdDy<<gCore->GetTimeFirstOutput()<<"\n"<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_PsdDy<<"globalDynodeID\tlayer\tstrip\tside\t\tWidth\tMP\tArea\tGSigma"<<std::endl;
+  o_MipData_PsdDy<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
+  o_MipData_PsdDy<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_PsdDy<<Mark_D<<std::endl;
   lxg_f->SetRange(100,1000);
   layerNo = DmpParameterPsd::kPlaneNo*2;
   for(short l=0;l<layerNo;++l){
@@ -223,6 +231,8 @@ bool DmpAlgCalibrationMips::Finalize(){
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
         o_MipData_PsdBar<<"\t"<<lxg_f->GetParameter(ip);
       }
+      mpv = lxg_f->GetParameter(1);
+      o_MipData_PsdBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
       o_MipData_PsdBar<<std::endl;
       fPsdMipsHist_Bar[gid_bar]->Write();
       delete fPsdMipsHist_Bar[gid_bar];
@@ -234,13 +244,17 @@ bool DmpAlgCalibrationMips::Finalize(){
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
           o_MipData_PsdDy<<"\t"<<lxg_f->GetParameter(ip);
         }
+        mpv = lxg_f->GetParameter(1);
+        o_MipData_PsdDy<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
         o_MipData_PsdDy<<std::endl;
         fPsdMipsHist_Dy[gid_dy]->Write();
         delete fPsdMipsHist_Dy[gid_dy];
       }
     }
   }
+  o_MipData_PsdBar<<Mark_N<<std::endl;
   o_MipData_PsdBar.close();
+  o_MipData_PsdDy<<Mark_N<<std::endl;
   o_MipData_PsdDy.close();
 
   return true;
