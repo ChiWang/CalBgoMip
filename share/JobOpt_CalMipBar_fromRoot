@@ -22,19 +22,18 @@ DMPSW.Core.SetStopTime("2014-11-18 21:44:10")      # default: 2053-01-01 00:00:0
 
 #-------------------------------------------------------------------
 # RootIOSvc options
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_163049-RawSignal.root")
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_163049-Rec0.root")
 #DMPSW.RootIOSvc.InputPath(os.environ["DMPSWWORK"]+"/data/sci")
-DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_214521-RawSignal.root")  # muon many
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_202446-RawSignal.root")  # muon many
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_181842-RawSignal.root")  # muon P43_68
-#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141030_125252-RawSignal.root")  # muon P93_93
+DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_214521-Rec0.root")  # muon many
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_202446-Rec0.root")  # muon many
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141118_181842-Rec0.root")  # muon P43_68
+#DMPSW.RootIOSvc.SetInputFile("./A2Data00_20141030_125252-Rec0.root")  # muon P93_93
 #DMPSW.RootIOSvc.WriteList("Calibration/Bgo")  # split by ;
 #DMPSW.RootIOSvc.OutputPath(os.environ["DMPSWWORK"]+"/run/data/cal/mip")
 
 #-------------------------------------------------------------------
 # Creat user's service or algorithm
 calMip = DmpCalMip.DmpAlgCalibrationMips()
-calMip.SetHistParameters(100,100,1600)
 DMPSW.AlgMgr.Append(calMip)
 
 #-------------------------------------------------------------------

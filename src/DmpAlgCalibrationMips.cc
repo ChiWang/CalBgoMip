@@ -25,16 +25,11 @@
 #include "DmpTimeConvertor.h"
 #include "MyFunctions.h"
 
-#define  Psd_Bgo_Gap 300
-
 //-------------------------------------------------------------------
 DmpAlgCalibrationMips::DmpAlgCalibrationMips()
  :DmpVAlg("DmpAlgCalibrationMips"),
   fEvtBgo(0),
-  fEvtPsd(0),
-  fRange_lo(100),
-  fRange_hi(1600),
-  fBinNo(200)
+  fEvtPsd(0)
 {
   gRootIOSvc->SetOutFileKey("CalMip");
 }
@@ -65,11 +60,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid = DmpBgoBase::ConstructGlobalBarID(l,b);
       snprintf(name,50,"BgoMip_%05d-L%02d_B%02d",gid,l,b);
-      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi)));
+      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
       for(short s=0;s<DmpParameterBgo::kSideNo;++s){
         gid = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"BgoMip_%05d-L%02d_B%02d_Dy%02d",gid,l,b,s*10+8);
-        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi)));
+        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
       }
     }
   }
@@ -78,11 +73,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid = DmpPsdBase::ConstructGlobalStripID(l,b);
       snprintf(name,50,"PsdMip_%05d-L%02d_S%02d",gid,l,b);
-      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi-Psd_Bgo_Gap)));
+      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
       for(short s=0;s<DmpParameterPsd::kSideNo;++s){
         gid = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"PsdMip_%05d-L%02d_S%02d_Dy%02d",gid,l,b,s*10+8);
-        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,fBinNo,fRange_lo,fRange_hi-Psd_Bgo_Gap)));
+        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
       }
     }
   }
@@ -97,46 +92,32 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
   }
   //-------------------------------------------------------------------
   // bgo Mip bar
-  static short bgo_layerNo = DmpParameterBgo::kPlaneNo*2;
-  for(short l=0;l<bgo_layerNo;++l){
-    for(short b=0;b<DmpParameterBgo::kBarNo;++b){
-      short gid_dy_s0 = DmpBgoBase::ConstructGlobalDynodeID(l,b,0,8);
-      short gid_dy_s1 = DmpBgoBase::ConstructGlobalDynodeID(l,b,1,8);
-      std::vector<short>::iterator s0dy8 = std::find(fEvtBgo->fGlobalDynodeID.begin(),fEvtBgo->fGlobalDynodeID.end(),gid_dy_s0);
-      std::vector<short>::iterator s1dy8 = std::find(fEvtBgo->fGlobalDynodeID.begin(),fEvtBgo->fGlobalDynodeID.end(),gid_dy_s1);
-      if(s0dy8 == fEvtBgo->fGlobalDynodeID.end() || s1dy8 == fEvtBgo->fGlobalDynodeID.end()){
-        continue;
-      }
-      int i0 = s0dy8 - fEvtBgo->fGlobalDynodeID.begin();
-      int i1 = s1dy8 - fEvtBgo->fGlobalDynodeID.begin();
-      if(fEvtBgo->fADC.at(i0) < fRange_lo || fEvtBgo->fADC.at(i0) > fRange_hi || fEvtBgo->fADC.at(i1) < fRange_lo || fEvtBgo->fADC.at(i1) > fRange_hi){
-        continue;
-      }
-      fBgoMipsHist_Dy[gid_dy_s0]->Fill(fEvtBgo->fADC.at(i0));
-      fBgoMipsHist_Dy[gid_dy_s1]->Fill(fEvtBgo->fADC.at(i1));
-      fBgoMipsHist_Bar[DmpBgoBase::ConstructGlobalBarID(l,b)]->Fill(TMath::Sqrt(fEvtBgo->fADC.at(i0) * fEvtBgo->fADC.at(i1)));
+  static std::vector<short>   barIDs;
+  static short dyid0,dyid1;
+  for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
+    barIDs.clear();
+    barIDs = GetBarIDOfLayer_bgo(l);
+    if(barIDs.size() > 2)continue;
+    for(size_t ib = 0;ib<barIDs.size();++ib){
+      dyid0 = DmpBgoBase::ConstructGlobalDynodeID(l,barIDs[ib],0,8);
+      dyid1 = DmpBgoBase::ConstructGlobalDynodeID(l,barIDs[ib],1,8);
+      fBgoMipsHist_Dy[dyid0]->Fill(fEvtBgo->fADC[dyid0]);
+      fBgoMipsHist_Dy[dyid1]->Fill(fEvtBgo->fADC[dyid1]);
+      fBgoMipsHist_Bar[DmpBgoBase::ConstructGlobalBarID(l,barIDs[ib])]->Fill(TMath::Sqrt(fEvtBgo->fADC[dyid0] * fEvtBgo->fADC[dyid1]));
     }
   }
 
   // Psd Mip bar
-  static short psd_layerNo = DmpParameterPsd::kPlaneNo*2;
-  for(short l=0;l<psd_layerNo;++l){
-    for(short b=0;b<DmpParameterPsd::kStripNo;++b){
-      short gid_dy_s0 = DmpPsdBase::ConstructGlobalDynodeID(l,b,0,8);
-      short gid_dy_s1 = DmpPsdBase::ConstructGlobalDynodeID(l,b,1,8);
-      std::vector<short>::iterator s0dy8 = std::find(fEvtPsd->fGlobalDynodeID.begin(),fEvtPsd->fGlobalDynodeID.end(),gid_dy_s0);
-      std::vector<short>::iterator s1dy8 = std::find(fEvtPsd->fGlobalDynodeID.begin(),fEvtPsd->fGlobalDynodeID.end(),gid_dy_s1);
-      if(s0dy8 == fEvtPsd->fGlobalDynodeID.end() || s1dy8 == fEvtPsd->fGlobalDynodeID.end()){
-        continue;
-      }
-      int i0 = s0dy8 - fEvtPsd->fGlobalDynodeID.begin();
-      int i1 = s1dy8 - fEvtPsd->fGlobalDynodeID.begin();
-      if(fEvtPsd->fADC.at(i0) < fRange_lo || fEvtPsd->fADC.at(i0) > fRange_hi-Psd_Bgo_Gap || fEvtPsd->fADC.at(i1) < fRange_lo || fEvtPsd->fADC.at(i1) > fRange_hi-Psd_Bgo_Gap){
-        continue;
-      }
-      fPsdMipsHist_Dy[gid_dy_s0]->Fill(fEvtPsd->fADC.at(i0));
-      fPsdMipsHist_Dy[gid_dy_s1]->Fill(fEvtPsd->fADC.at(i1));
-      fPsdMipsHist_Bar[DmpPsdBase::ConstructGlobalStripID(l,b)]->Fill(TMath::Sqrt(fEvtPsd->fADC.at(i0) * fEvtPsd->fADC.at(i1)));
+  for(short l=0;l<DmpParameterPsd::kPlaneNo*2;++l){
+    barIDs.clear();
+    barIDs = GetBarIDOfLayer_psd(l);
+    if(barIDs.size() > 2)continue;
+    for(size_t ib = 0;ib<barIDs.size();++ib){
+      dyid0 = DmpPsdBase::ConstructGlobalDynodeID(l,barIDs[ib],0,8);
+      dyid1 = DmpPsdBase::ConstructGlobalDynodeID(l,barIDs[ib],1,8);
+      fPsdMipsHist_Dy[dyid0]->Fill(fEvtPsd->fADC[dyid0]);
+      fPsdMipsHist_Dy[dyid1]->Fill(fEvtPsd->fADC[dyid1]);
+      fPsdMipsHist_Bar[DmpPsdBase::ConstructGlobalStripID(l,barIDs[ib])]->Fill(TMath::Sqrt(fEvtPsd->fADC[dyid0] * fEvtPsd->fADC[dyid1]));
     }
   }
 
@@ -147,8 +128,8 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
 bool DmpAlgCalibrationMips::Finalize(){
   TF1 *lxg_f = gMyFunctions->GetLanGau();
   double sv[4]={20,500,5000,50};
-  double pllo[4]={10,fRange_lo,1000,10};
-  double plhi[4]={100,fRange_hi,100000,200};
+  double pllo[4]={10,0,1000,10};
+  double plhi[4]={100,2000,100000,200};
   lxg_f->SetParameters(sv);
   for (int i=0; i<4; ++i) {
     lxg_f->SetParLimits(i, pllo[i], plhi[i]);
@@ -260,4 +241,51 @@ bool DmpAlgCalibrationMips::Finalize(){
   return true;
 }
 
+std::vector<short> DmpAlgCalibrationMips::GetBarIDOfLayer_bgo(short l,short side)const
+{
+  std::vector<short> ret;
+  static short gid_dy =0;
+  if(side == 0  || side == 1){
+    for(short b=0;b<DmpParameterBgo::kBarNo;++b){
+      gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,side,8);
+      if(fEvtBgo->fADC.find(gid_dy) == fEvtBgo->fADC.end()){
+        continue;
+      }
+      ret.push_back(b);
+    }
+  }else{
+    std::vector<short> bs0 = this->GetBarIDOfLayer_bgo(l,0);
+    std::vector<short> bs1 = this->GetBarIDOfLayer_bgo(l,1);
+    for(short i=0;i<bs0.size();++i){
+      if(std::find(bs1.begin(),bs1.end(),bs0[i]) != bs1.end()){
+        ret.push_back(bs0[i]);
+      }
+    }
+  }
+  return ret;
+}
+
+std::vector<short> DmpAlgCalibrationMips::GetBarIDOfLayer_psd(short l,short side)const
+{
+  std::vector<short> ret;
+  static short gid_dy =0;
+  if(side == 0  || side == 1){
+    for(short b=0;b<DmpParameterPsd::kStripNo;++b){
+      gid_dy = DmpPsdBase::ConstructGlobalDynodeID(l,b,side,8);
+      if(fEvtPsd->fADC.find(gid_dy) == fEvtPsd->fADC.end()){
+        continue;
+      }
+      ret.push_back(b);
+    }
+  }else{
+    std::vector<short> bs0 = this->GetBarIDOfLayer_psd(l,0);
+    std::vector<short> bs1 = this->GetBarIDOfLayer_psd(l,1);
+    for(short i=0;i<bs0.size();++i){
+      if(std::find(bs1.begin(),bs1.end(),bs0[i]) != bs1.end()){
+        ret.push_back(bs0[i]);
+      }
+    }
+  }
+  return ret;
+}
 

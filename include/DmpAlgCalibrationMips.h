@@ -25,7 +25,6 @@ public:
   DmpAlgCalibrationMips();
   ~DmpAlgCalibrationMips();
 
-  void SetHistParameters(int nBin,double low,double high){fRange_lo = low;fRange_hi = high;fBinNo = nBin;}
   bool Initialize();
   bool ProcessThisEvent();
   bool Finalize();
@@ -47,9 +46,8 @@ private:
   std::ofstream         o_MipData_PsdDy;      //
 
 private:
-  double    fRange_lo;      //
-  double    fRange_hi;      //
-  int       fBinNo;         // bin number
+  std::vector<short>  GetBarIDOfLayer_bgo(short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both
+  std::vector<short>  GetBarIDOfLayer_psd(short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both
 
 };
 
