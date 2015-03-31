@@ -158,10 +158,10 @@ bool DmpAlgCalibrationMips::Finalize(){
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_bar = DmpBgoBase::ConstructGlobalBarID(l,b);
-      o_MipData_BgoBar<<gid_bar<<"\t"<<l<<"\t"<<b<<"\t";
+      o_MipData_BgoBar<<gid_bar<<"\t\t"<<l<<"\t\t"<<b;
       fBgoMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-        o_MipData_BgoBar<<"\t"<<lxg_f->GetParameter(ip);
+        o_MipData_BgoBar<<"\t\t"<<lxg_f->GetParameter(ip);
       }
       mpv = lxg_f->GetParameter(1);
       o_MipData_BgoBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
@@ -171,7 +171,7 @@ bool DmpAlgCalibrationMips::Finalize(){
 
       for(short s = 0;s<DmpParameterBgo::kSideNo;++s){
         gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
-        o_MipData_BgoDy<<gid_dy<<"\t"<<l<<"\t"<<b<<"\t"<<s<<"\t";
+        o_MipData_BgoDy<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
         fBgoMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
           o_MipData_BgoDy<<"\t\t"<<lxg_f->GetParameter(ip);
@@ -207,10 +207,10 @@ bool DmpAlgCalibrationMips::Finalize(){
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid_bar = DmpPsdBase::ConstructGlobalStripID(l,b);
-      o_MipData_PsdBar<<gid_bar<<"\t"<<l<<"\t"<<b<<"\t";
+      o_MipData_PsdBar<<gid_bar<<"\t\t"<<l<<"\t\t"<<b;
       fPsdMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-        o_MipData_PsdBar<<"\t"<<lxg_f->GetParameter(ip);
+        o_MipData_PsdBar<<"\t\t"<<lxg_f->GetParameter(ip);
       }
       mpv = lxg_f->GetParameter(1);
       o_MipData_PsdBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
@@ -220,10 +220,10 @@ bool DmpAlgCalibrationMips::Finalize(){
 
       for(short s = 0;s<DmpParameterPsd::kSideNo;++s){
         gid_dy = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
-        o_MipData_PsdDy<<gid_dy<<"\t"<<l<<"\t"<<b<<"\t"<<s<<"\t";
+        o_MipData_PsdDy<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
         fPsdMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-          o_MipData_PsdDy<<"\t"<<lxg_f->GetParameter(ip);
+          o_MipData_PsdDy<<"\t\t"<<lxg_f->GetParameter(ip);
         }
         mpv = lxg_f->GetParameter(1);
         o_MipData_PsdDy<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv);
