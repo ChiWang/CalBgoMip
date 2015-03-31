@@ -60,11 +60,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid = DmpBgoBase::ConstructGlobalBarID(l,b);
       snprintf(name,50,"BgoMip_%05d-L%02d_B%02d",gid,l,b);
-      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
+      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
       for(short s=0;s<DmpParameterBgo::kSideNo;++s){
         gid = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"BgoMip_%05d-L%02d_B%02d_Dy%02d",gid,l,b,s*10+8);
-        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
+        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
       }
     }
   }
@@ -73,11 +73,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid = DmpPsdBase::ConstructGlobalStripID(l,b);
       snprintf(name,50,"PsdMip_%05d-L%02d_S%02d",gid,l,b);
-      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
+      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
       for(short s=0;s<DmpParameterPsd::kSideNo;++s){
         gid = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"PsdMip_%05d-L%02d_S%02d_Dy%02d",gid,l,b,s*10+8);
-        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,1000,0,2000)));
+        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
       }
     }
   }
