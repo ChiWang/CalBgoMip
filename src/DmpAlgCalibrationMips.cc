@@ -165,7 +165,6 @@ bool DmpAlgCalibrationMips::Finalize(){
       }
       mpv = lxg_f->GetParameter(1);
       o_MipData_BgoBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fBgoMipsHist_Bar[gid_bar]->GetEntries()<<std::endl;
-      o_MipData_BgoBar<<std::endl;
       fBgoMipsHist_Bar[gid_bar]->Write();
       delete fBgoMipsHist_Bar[gid_bar];
 
@@ -178,7 +177,6 @@ bool DmpAlgCalibrationMips::Finalize(){
         }
         mpv = lxg_f->GetParameter(1);
         o_MipData_BgoDy<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fBgoMipsHist_Dy[gid_dy]->GetEntries()<<std::endl;
-        o_MipData_BgoDy<<std::endl;
         fBgoMipsHist_Dy[gid_dy]->Write();
         delete fBgoMipsHist_Dy[gid_dy];
       }
@@ -214,7 +212,6 @@ bool DmpAlgCalibrationMips::Finalize(){
       }
       mpv = lxg_f->GetParameter(1);
       o_MipData_PsdBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fPsdMipsHist_Bar[gid_bar]->GetEntries()<<std::endl;
-      o_MipData_PsdBar<<std::endl;
       fPsdMipsHist_Bar[gid_bar]->Write();
       delete fPsdMipsHist_Bar[gid_bar];
 
