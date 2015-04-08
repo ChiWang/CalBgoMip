@@ -34,16 +34,12 @@ private:
   DmpEvtPsdRaw          *fEvtPsd;
 
   std::map<short,TH1D*>  fBgoMipsHist_Bar;       // key is global bar ID
-  std::ofstream         o_MipData_BgoBar;      //
-
   std::map<short,TH1D*>  fBgoMipsHist_Dy;        // key is global dynode ID
-  std::ofstream         o_MipData_BgoDy;      //
+  std::ofstream         o_MipData_Bgo;      //
 
   std::map<short,TH1D*>  fPsdMipsHist_Bar;       // key is global bar ID
-  std::ofstream         o_MipData_PsdBar;      //
-
   std::map<short,TH1D*>  fPsdMipsHist_Dy;        // key is global dynode ID
-  std::ofstream         o_MipData_PsdDy;      //
+  std::ofstream         o_MipData_Psd;      //
 
 private:
   std::vector<short>  GetBarIDOfLayer_bgo(short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both

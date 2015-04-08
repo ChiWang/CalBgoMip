@@ -141,15 +141,10 @@ bool DmpAlgCalibrationMips::Finalize(){
   histFile->mkdir("Bgo");
   histFile->cd("Bgo");
   std::string name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip";
-  o_MipData_BgoBar.open(name.c_str(),std::ios::out);
-  o_MipData_BgoBar<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_BgoBar<<"StartTime"<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_BgoBar<<Mark_D<<std::endl;
-  name = "Bgo_"+gRootIOSvc->GetInputStem()+"Dy8.mip";
-  o_MipData_BgoDy.open(name.c_str(),std::ios::out);
-  o_MipData_BgoDy<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_BgoDy<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_BgoDy<<Mark_D<<std::endl;
+  o_MipData_Bgo.open(name.c_str(),std::ios::out);
+  o_MipData_Bgo<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
+  o_MipData_Bgo<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_Bgo<<Mark_D<<std::endl;
   lxg_f->SetRange(100,1500);
   short layerNo = DmpParameterBgo::kPlaneNo*2;
   short gid_bar = -1;
@@ -158,81 +153,72 @@ bool DmpAlgCalibrationMips::Finalize(){
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_bar = DmpBgoBase::ConstructGlobalBarID(l,b);
-      o_MipData_BgoBar<<gid_bar<<"\t\t"<<l<<"\t\t"<<b;
+      o_MipData_Bgo<<gid_bar<<"\t\t"<<l<<"\t\t"<<b<<"\t\t";
       fBgoMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-        o_MipData_BgoBar<<"\t\t"<<lxg_f->GetParameter(ip);
+        o_MipData_Bgo<<"\t\t"<<lxg_f->GetParameter(ip);
       }
       mpv = lxg_f->GetParameter(1);
-      o_MipData_BgoBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fBgoMipsHist_Bar[gid_bar]->GetEntries()<<std::endl;
+      o_MipData_Bgo<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fBgoMipsHist_Bar[gid_bar]->GetEntries()<<std::endl;
       fBgoMipsHist_Bar[gid_bar]->Write();
       delete fBgoMipsHist_Bar[gid_bar];
 
       for(short s = 0;s<DmpParameterBgo::kSideNo;++s){
         gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
-        o_MipData_BgoDy<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+        o_MipData_Bgo<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
         fBgoMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-          o_MipData_BgoDy<<"\t\t"<<lxg_f->GetParameter(ip);
+          o_MipData_Bgo<<"\t\t"<<lxg_f->GetParameter(ip);
         }
         mpv = lxg_f->GetParameter(1);
-        o_MipData_BgoDy<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fBgoMipsHist_Dy[gid_dy]->GetEntries()<<std::endl;
+        o_MipData_Bgo<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fBgoMipsHist_Dy[gid_dy]->GetEntries()<<std::endl;
         fBgoMipsHist_Dy[gid_dy]->Write();
         delete fBgoMipsHist_Dy[gid_dy];
       }
     }
   }
-  o_MipData_BgoBar<<Mark_N<<std::endl;
-  o_MipData_BgoBar.close();
-  o_MipData_BgoDy<<Mark_N<<std::endl;
-  o_MipData_BgoDy.close();
+  o_MipData_Bgo<<Mark_N<<std::endl;
+  o_MipData_Bgo.close();
 
   // create output txtfile      PSD
   histFile->mkdir("Psd");
   histFile->cd("Psd");
   name= "Psd_"+gRootIOSvc->GetInputStem()+".mip";
-  o_MipData_PsdBar.open(name.c_str(),std::ios::out);
-  o_MipData_PsdBar<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_PsdBar<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_PsdBar<<Mark_D<<std::endl;
-  name = "Psd_"+gRootIOSvc->GetInputStem()+"Dy8.mip";
-  o_MipData_PsdDy.open(name.c_str(),std::ios::out);
-  o_MipData_PsdDy<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_PsdDy<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
-  o_MipData_PsdDy<<Mark_D<<std::endl;
+  o_MipData_Psd.open(name.c_str(),std::ios::out);
+  o_MipData_Psd<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
+  o_MipData_Psd<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_Psd<<Mark_D<<std::endl;
   lxg_f->SetRange(100,1000);
   layerNo = DmpParameterPsd::kPlaneNo*2;
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid_bar = DmpPsdBase::ConstructGlobalStripID(l,b);
-      o_MipData_PsdBar<<gid_bar<<"\t\t"<<l<<"\t\t"<<b;
+      o_MipData_Psd<<gid_bar<<"\t\t"<<l<<"\t\t"<<b<<"\t\t";
       fPsdMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-        o_MipData_PsdBar<<"\t\t"<<lxg_f->GetParameter(ip);
+        o_MipData_Psd<<"\t\t"<<lxg_f->GetParameter(ip);
       }
       mpv = lxg_f->GetParameter(1);
-      o_MipData_PsdBar<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fPsdMipsHist_Bar[gid_bar]->GetEntries()<<std::endl;
+      o_MipData_Psd<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fPsdMipsHist_Bar[gid_bar]->GetEntries()<<std::endl;
       fPsdMipsHist_Bar[gid_bar]->Write();
       delete fPsdMipsHist_Bar[gid_bar];
 
       for(short s = 0;s<DmpParameterPsd::kSideNo;++s){
         gid_dy = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
-        o_MipData_PsdDy<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+        o_MipData_Psd<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
         fPsdMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
-          o_MipData_PsdDy<<"\t\t"<<lxg_f->GetParameter(ip);
+          o_MipData_Psd<<"\t\t"<<lxg_f->GetParameter(ip);
         }
         mpv = lxg_f->GetParameter(1);
-        o_MipData_PsdDy<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fPsdMipsHist_Dy[gid_dy]->GetEntries()<<std::endl;
+        o_MipData_Psd<<"\t\t"<<lxg_f->GetMaximumX(0.8*mpv,1.2*mpv)<<"\t\t"<<lxg_f->GetChisquare() / lxg_f->GetNDF()<<"\t\t"<<fPsdMipsHist_Dy[gid_dy]->GetEntries()<<std::endl;
         fPsdMipsHist_Dy[gid_dy]->Write();
         delete fPsdMipsHist_Dy[gid_dy];
       }
     }
   }
-  o_MipData_PsdBar<<Mark_N<<std::endl;
-  o_MipData_PsdBar.close();
-  o_MipData_PsdDy<<Mark_N<<std::endl;
-  o_MipData_PsdDy.close();
+  o_MipData_Psd<<Mark_N<<std::endl;
+  o_MipData_Psd.close();
 
   return true;
 }
