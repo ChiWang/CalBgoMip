@@ -42,8 +42,8 @@ private:
   std::ofstream         o_MipData_Psd;      //
 
 private:
-  std::vector<short>  GetBarIDOfLayer_bgo(short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both
-  std::vector<short>  GetBarIDOfLayer_psd(short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both
+  void GetBarIDOfLayer_bgo(std::vector<short> &barIDs, short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both
+  void GetBarIDOfLayer_psd(std::vector<short> &barID,short layerID,short side=-1)const;   // side = 0: check side_0;  side = 1: check side_1;  side = -1, check both
 
 };
 

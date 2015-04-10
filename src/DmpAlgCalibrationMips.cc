@@ -25,6 +25,8 @@
 #include "DmpTimeConvertor.h"
 #include "MyFunctions.h"
 
+#define CertainMip 10
+
 //-------------------------------------------------------------------
 DmpAlgCalibrationMips::DmpAlgCalibrationMips()
  :DmpVAlg("DmpAlgCalibrationMips"),
@@ -95,8 +97,11 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
   static std::vector<short>   barIDs;
   static short dyid0,dyid1;
   for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
-    barIDs.clear();
-    barIDs = GetBarIDOfLayer_bgo(l);
+    GetBarIDOfLayer_bgo(barIDs,l);
+    if(barIDs.size() > 3) return false;
+  }
+  for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
+    GetBarIDOfLayer_bgo(barIDs,l);
     if(barIDs.size() > 2)continue;
     for(size_t ib = 0;ib<barIDs.size();++ib){
       dyid0 = DmpBgoBase::ConstructGlobalDynodeID(l,barIDs[ib],0,8);
@@ -109,8 +114,7 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
 
   // Psd Mip bar
   for(short l=0;l<DmpParameterPsd::kPlaneNo*2;++l){
-    barIDs.clear();
-    barIDs = GetBarIDOfLayer_psd(l);
+    GetBarIDOfLayer_psd(barIDs,l);
     if(barIDs.size() > 2)continue;
     for(size_t ib = 0;ib<barIDs.size();++ib){
       dyid0 = DmpPsdBase::ConstructGlobalDynodeID(l,barIDs[ib],0,8);
@@ -223,33 +227,43 @@ bool DmpAlgCalibrationMips::Finalize(){
   return true;
 }
 
-std::vector<short> DmpAlgCalibrationMips::GetBarIDOfLayer_bgo(short l,short side)const
+void DmpAlgCalibrationMips::GetBarIDOfLayer_bgo(std::vector<short> &ret,short l,short side)const
 {
-  std::vector<short> ret;
+  ret.clear();
   static short gid_dy =0;
+  static short gid_dy5 =0;
   if(side == 0  || side == 1){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,side,8);
       if(fEvtBgo->fADC.find(gid_dy) == fEvtBgo->fADC.end()){
         continue;
       }
-      ret.push_back(b);
+      gid_dy5 = DmpBgoBase::ConstructGlobalDynodeID(l,b,side,5);
+      if(fEvtBgo->fADC.find(gid_dy5) != fEvtBgo->fADC.end()){
+        if(fEvtBgo->fADC[gid_dy5] > 30){
+std::cout<<"DEBUG: dy8 error\t"<<__FILE__<<"("<<__LINE__<<")"<<std::endl;
+          continue;
+        }
+      }
+      if(fEvtBgo->fADC[gid_dy] > CertainMip){
+        ret.push_back(b);
+      }
     }
   }else{
-    std::vector<short> bs0 = this->GetBarIDOfLayer_bgo(l,0);
-    std::vector<short> bs1 = this->GetBarIDOfLayer_bgo(l,1);
+    std::vector<short> bs0,bs1;
+    this->GetBarIDOfLayer_bgo(bs0,l,0);
+    this->GetBarIDOfLayer_bgo(bs1,l,1);
     for(short i=0;i<bs0.size();++i){
       if(std::find(bs1.begin(),bs1.end(),bs0[i]) != bs1.end()){
         ret.push_back(bs0[i]);
       }
     }
   }
-  return ret;
 }
 
-std::vector<short> DmpAlgCalibrationMips::GetBarIDOfLayer_psd(short l,short side)const
+void DmpAlgCalibrationMips::GetBarIDOfLayer_psd(std::vector<short> &ret,short l,short side)const
 {
-  std::vector<short> ret;
+  ret.clear();
   static short gid_dy =0;
   if(side == 0  || side == 1){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
@@ -257,17 +271,19 @@ std::vector<short> DmpAlgCalibrationMips::GetBarIDOfLayer_psd(short l,short side
       if(fEvtPsd->fADC.find(gid_dy) == fEvtPsd->fADC.end()){
         continue;
       }
-      ret.push_back(b);
+      if(fEvtPsd->fADC[gid_dy] > CertainMip){
+        ret.push_back(b);
+      }
     }
   }else{
-    std::vector<short> bs0 = this->GetBarIDOfLayer_psd(l,0);
-    std::vector<short> bs1 = this->GetBarIDOfLayer_psd(l,1);
+    std::vector<short> bs0,bs1;
+    this->GetBarIDOfLayer_psd(bs0,l,0);
+    this->GetBarIDOfLayer_psd(bs1,l,1);
     for(short i=0;i<bs0.size();++i){
       if(std::find(bs1.begin(),bs1.end(),bs0[i]) != bs1.end()){
         ret.push_back(bs0[i]);
       }
     }
   }
-  return ret;
 }
 
