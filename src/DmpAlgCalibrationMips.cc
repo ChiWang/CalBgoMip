@@ -25,7 +25,7 @@
 #include "DmpTimeConvertor.h"
 #include "MyFunctions.h"
 
-#define CertainMip 10
+#define CertainMip 30
 
 //-------------------------------------------------------------------
 DmpAlgCalibrationMips::DmpAlgCalibrationMips()
@@ -62,11 +62,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid = DmpBgoBase::ConstructGlobalBarID(l,b);
       snprintf(name,50,"BgoMip_%05d-L%02d_B%02d",gid,l,b);
-      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
+      fBgoMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,250,0,2000)));
       for(short s=0;s<DmpParameterBgo::kSideNo;++s){
         gid = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"BgoMip_%05d-L%02d_B%02d_Dy%02d",gid,l,b,s*10+8);
-        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
+        fBgoMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,250,0,2000)));
       }
     }
   }
@@ -75,11 +75,11 @@ bool DmpAlgCalibrationMips::Initialize(){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid = DmpPsdBase::ConstructGlobalStripID(l,b);
       snprintf(name,50,"PsdMip_%05d-L%02d_S%02d",gid,l,b);
-      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
+      fPsdMipsHist_Bar.insert(std::make_pair(gid,new TH1D(name,name,250,0,2000)));
       for(short s=0;s<DmpParameterPsd::kSideNo;++s){
         gid = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         snprintf(name,50,"PsdMip_%05d-L%02d_S%02d_Dy%02d",gid,l,b,s*10+8);
-        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,500,0,2000)));
+        fPsdMipsHist_Dy.insert(std::make_pair(gid,new TH1D(name,name,250,0,2000)));
       }
     }
   }
@@ -98,11 +98,11 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
   static short dyid0,dyid1;
   for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
     GetBarIDOfLayer_bgo(barIDs,l);
-    if(barIDs.size() > 3) return false;
+    if(barIDs.size() > 2) return false;
   }
   for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
     GetBarIDOfLayer_bgo(barIDs,l);
-    if(barIDs.size() > 2)continue;
+    //if(barIDs.size() > 2)continue;
     for(size_t ib = 0;ib<barIDs.size();++ib){
       dyid0 = DmpBgoBase::ConstructGlobalDynodeID(l,barIDs[ib],0,8);
       dyid1 = DmpBgoBase::ConstructGlobalDynodeID(l,barIDs[ib],1,8);
@@ -131,9 +131,9 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
 //-------------------------------------------------------------------
 bool DmpAlgCalibrationMips::Finalize(){
   TF1 *lxg_f = gMyFunctions->GetLanGau();
-  double sv[4]={20,500,5000,50};
-  double pllo[4]={10,0,1000,10};
-  double plhi[4]={100,2000,100000,200};
+  double sv[4]={20,500,5000,60};
+  double pllo[4]={10,20,200,10};
+  double plhi[4]={200,2000,100000,300};
   lxg_f->SetParameters(sv);
   for (int i=0; i<4; ++i) {
     lxg_f->SetParLimits(i, pllo[i], plhi[i]);
@@ -149,7 +149,7 @@ bool DmpAlgCalibrationMips::Finalize(){
   o_MipData_Bgo<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
   o_MipData_Bgo<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
   o_MipData_Bgo<<Mark_D<<std::endl;
-  lxg_f->SetRange(100,1500);
+  //lxg_f->SetRange(80,1500);
   short layerNo = DmpParameterBgo::kPlaneNo*2;
   short gid_bar = -1;
   short gid_dy = -1;
@@ -158,6 +158,7 @@ bool DmpAlgCalibrationMips::Finalize(){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_bar = DmpBgoBase::ConstructGlobalBarID(l,b);
       o_MipData_Bgo<<gid_bar<<"\t\t"<<l<<"\t\t"<<b<<"\t\t";
+      lxg_f->SetRange(fBgoMipsHist_Bar[gid_bar]->GetMean() * 0.3,fBgoMipsHist_Bar[gid_bar]->GetMean()*2.5);
       fBgoMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
         o_MipData_Bgo<<"\t\t"<<lxg_f->GetParameter(ip);
@@ -170,6 +171,7 @@ bool DmpAlgCalibrationMips::Finalize(){
       for(short s = 0;s<DmpParameterBgo::kSideNo;++s){
         gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         o_MipData_Bgo<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+        lxg_f->SetRange(fBgoMipsHist_Dy[gid_dy]->GetMean() * 0.3,fBgoMipsHist_Dy[gid_dy]->GetMean()*2.5);
         fBgoMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
           o_MipData_Bgo<<"\t\t"<<lxg_f->GetParameter(ip);
@@ -192,12 +194,13 @@ bool DmpAlgCalibrationMips::Finalize(){
   o_MipData_Psd<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
   o_MipData_Psd<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
   o_MipData_Psd<<Mark_D<<std::endl;
-  lxg_f->SetRange(100,1000);
+  lxg_f->SetRange(80,1200);
   layerNo = DmpParameterPsd::kPlaneNo*2;
   for(short l=0;l<layerNo;++l){
     for(short b=0;b<DmpParameterPsd::kStripNo;++b){
       gid_bar = DmpPsdBase::ConstructGlobalStripID(l,b);
       o_MipData_Psd<<gid_bar<<"\t\t"<<l<<"\t\t"<<b<<"\t\t";
+      lxg_f->SetRange(fPsdMipsHist_Bar[gid_bar]->GetMean() * 0.3,fPsdMipsHist_Bar[gid_bar]->GetMean()*2.5);
       fPsdMipsHist_Bar[gid_bar]->Fit(lxg_f,"RQB");
       for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
         o_MipData_Psd<<"\t\t"<<lxg_f->GetParameter(ip);
@@ -210,6 +213,7 @@ bool DmpAlgCalibrationMips::Finalize(){
       for(short s = 0;s<DmpParameterPsd::kSideNo;++s){
         gid_dy = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         o_MipData_Psd<<gid_dy<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+        lxg_f->SetRange(fPsdMipsHist_Dy[gid_dy]->GetMean() * 0.3,fPsdMipsHist_Dy[gid_dy]->GetMean()*2.5);
         fPsdMipsHist_Dy[gid_dy]->Fit(lxg_f,"RQB");
         for(int ip=0;ip<lxg_f->GetNumberFreeParameters();++ip){
           o_MipData_Psd<<"\t\t"<<lxg_f->GetParameter(ip);
@@ -231,19 +235,11 @@ void DmpAlgCalibrationMips::GetBarIDOfLayer_bgo(std::vector<short> &ret,short l,
 {
   ret.clear();
   static short gid_dy =0;
-  static short gid_dy5 =0;
   if(side == 0  || side == 1){
     for(short b=0;b<DmpParameterBgo::kBarNo;++b){
       gid_dy = DmpBgoBase::ConstructGlobalDynodeID(l,b,side,8);
       if(fEvtBgo->fADC.find(gid_dy) == fEvtBgo->fADC.end()){
         continue;
-      }
-      gid_dy5 = DmpBgoBase::ConstructGlobalDynodeID(l,b,side,5);
-      if(fEvtBgo->fADC.find(gid_dy5) != fEvtBgo->fADC.end()){
-        if(fEvtBgo->fADC[gid_dy5] > 30){
-std::cout<<"DEBUG: dy8 error\t"<<__FILE__<<"("<<__LINE__<<")"<<std::endl;
-          continue;
-        }
       }
       if(fEvtBgo->fADC[gid_dy] > CertainMip){
         ret.push_back(b);
