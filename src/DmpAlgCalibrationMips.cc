@@ -95,10 +95,16 @@ bool DmpAlgCalibrationMips::ProcessThisEvent(){
   //-------------------------------------------------------------------
   // bgo Mip bar
   static std::vector<short>   barIDs;
+  static std::vector<short>   layerIDS;
   static short dyid0,dyid1;
+  layerIDS.clear();
   for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
     GetBarIDOfLayer_bgo(barIDs,l);
     if(barIDs.size() > 2) return false;
+    layerIDS.push_back(l);
+  }
+  if(layerIDS.size() < 10){
+    return false;
   }
   for(short l=0;l<DmpParameterBgo::kPlaneNo*2;++l){
     GetBarIDOfLayer_bgo(barIDs,l);
