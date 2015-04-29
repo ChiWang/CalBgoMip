@@ -133,7 +133,7 @@ bool DmpAlgCalibrationMips::Initialize(){
           short gid_s = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,d*3+2);
           short gid_b = DmpBgoBase::ConstructGlobalDynodeID(l,b,s,(d+1)*3+2);
           //std::cout<<"DEBUG: "<<__FILE__<<"("<<__LINE__<<")\tl="<<l<<"\tb ="<<b<<"\ts="<<s<<"\td="<<d<<"\t\tped size ="<<fBgoPed[gid_s].size()<<"\t\t"<<fBgoPed[gid_b].size()<<"\t\t"<<fBgoRel[gid_s].size()<<std::endl;
-          fTotSigmaBgo[gid_s] = TMath::Sqrt(TMath::Power(fBgoPed[gid_s].at(5),2) + TMath::Power(fBgoPed[gid_b].at(5)*fBgoRel[gid_s].at(5),2));
+          fTotSigmaBgo[gid_s] = TMath::Sqrt(TMath::Power(fBgoPed.at(gid_s).at(1),2) + TMath::Power(fBgoPed.at(gid_b).at(1)*fBgoRel.at(gid_s).at(1),2));
           //fTotSigmaBgo[gid_s] = TMath::Sqrt(TMath::Power(fBgoPed[gid_s].at(5),2) + TMath::Power(fBgoPed[gid_b].at(5)*fBgoRel[gid_s].at(5),2) + TMath::Power(fBgoRel[gid_s].at(4)/2,2));
         }
       }
@@ -145,7 +145,7 @@ bool DmpAlgCalibrationMips::Initialize(){
         short gid_s = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,5);
         short gid_b = DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
           //std::cout<<"DEBUG: "<<__FILE__<<"("<<__LINE__<<")\tgid = "<<gid_s<<"\tl="<<l<<"\tb ="<<b<<"\ts="<<s<<"\t\tped size ="<<fPsdPed[gid_s].size()<<"\t\t"<<fPsdPed[gid_b].size()<<"\t\t"<<fPsdRel[gid_s].size()<<std::endl;
-        fTotSigmaPsd[gid_s] = TMath::Sqrt(TMath::Power(fPsdPed[gid_s].at(5),2) + TMath::Power(fPsdPed[gid_b].at(5)*fPsdRel[gid_s].at(5),2));
+        fTotSigmaPsd[gid_s] = TMath::Sqrt(TMath::Power(fPsdPed.at(gid_s).at(1),2) + TMath::Power(fPsdPed.at(gid_b).at(1)*fPsdRel.at(gid_s).at(1),2));
       }
     }
   }
@@ -221,7 +221,7 @@ bool DmpAlgCalibrationMips::Finalize(){
   std::string name = "Bgo_"+gRootIOSvc->GetInputStem()+".mip";
   o_MipData_Bgo.open(name.c_str(),std::ios::out);
   o_MipData_Bgo<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_Bgo<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_Bgo<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<"\nDetector="<<DmpEDetectorID::kBgo<<"\nType=2"<<std::endl;
   o_MipData_Bgo<<Mark_D<<std::endl;
   TCanvas *c = new TCanvas("c1","",600,800);
   c->Divide(9,8);
@@ -232,9 +232,9 @@ bool DmpAlgCalibrationMips::Finalize(){
         c->cd(b*3+s+1);
         gPad->SetGrid();
         if(s ==2){
-          o_MipData_Bgo<<DmpBgoBase::ConstructGlobalBarID(l,b)<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+          o_MipData_Bgo<<DmpBgoBase::ConstructGlobalBarID(l,b);
         }else{
-          o_MipData_Bgo<<DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8)<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+          o_MipData_Bgo<<DmpBgoBase::ConstructGlobalDynodeID(l,b,s,8);
         }
         lxg_f->SetRange(fBgoMipsHist[l][b][s]->GetMean() * 0.3,fBgoMipsHist[l][b][s]->GetMean()*2.5);
         fitStatus = fBgoMipsHist[l][b][s]->Fit(lxg_f,"RQB");
@@ -261,7 +261,7 @@ bool DmpAlgCalibrationMips::Finalize(){
   name= "Psd_"+gRootIOSvc->GetInputStem()+".mip";
   o_MipData_Psd.open(name.c_str(),std::ios::out);
   o_MipData_Psd<<Mark_S<<"\nFileName="<<gRootIOSvc->GetInputFileName()<<std::endl;
-  o_MipData_Psd<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<std::endl;
+  o_MipData_Psd<<"StartTime="<<gCore->GetTimeFirstOutput()<<"\nStopTime="<<gCore->GetTimeLastOutput()<<"\nDetector="<<DmpEDetectorID::kPsd<<"\nType=2"<<std::endl;
   o_MipData_Psd<<Mark_D<<std::endl;
   TCanvas *c2 = new TCanvas("c2","",600,800);
   c2->Divide(9,14);
@@ -271,9 +271,9 @@ bool DmpAlgCalibrationMips::Finalize(){
         c2->cd(b*3+s+1);
         gPad->SetGrid();
         if(s == 2){
-          o_MipData_Psd<<DmpPsdBase::ConstructGlobalStripID(l,b)<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+          o_MipData_Psd<<DmpPsdBase::ConstructGlobalStripID(l,b);
         }else{
-          o_MipData_Psd<<DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8)<<"\t\t"<<l<<"\t\t"<<b<<"\t\t"<<s;
+          o_MipData_Psd<<DmpPsdBase::ConstructGlobalDynodeID(l,b,s,8);
         }
         lxg_f->SetRange(fPsdMipsHist[l][b][s]->GetMean() * 0.3,fPsdMipsHist[l][b][s]->GetMean()*2.5);
         fitStatus = fPsdMipsHist[l][b][s]->Fit(lxg_f,"RQB");
@@ -312,11 +312,11 @@ void DmpAlgCalibrationMips::GetBarIDOfLayer_bgo(std::vector<short> &ret,short l,
       if(fEvtBgo->fADC.find(gid_dy) == fEvtBgo->fADC.end()){
         continue;
       }
-      if(fEvtBgo->fADC[gid_dy] > 5*fBgoPed.at(gid_dy).at(5)){
+      if(fEvtBgo->fADC[gid_dy] > 5*fBgoPed.at(gid_dy).at(1)){
         gid_dy5 = DmpBgoBase::ConstructGlobalDynodeID(l,b,side,5);
         if(fEvtBgo->fADC.find(gid_dy5) != fEvtBgo->fADC.end()){
-          if(fEvtBgo->fADC.at(gid_dy5) > 5 * fBgoPed.at(gid_dy5).at(5)){
-            double deltaADC_small = fEvtBgo->fADC.at(gid_dy)*fBgoRel.at(gid_dy5).at(5) + fBgoRel.at(gid_dy5).at(4)  - fEvtBgo->fADC.at(gid_dy5);
+          if(fEvtBgo->fADC.at(gid_dy5) > 5 * fBgoPed.at(gid_dy5).at(1)){
+            double deltaADC_small = fEvtBgo->fADC.at(gid_dy)*fBgoRel.at(gid_dy5).at(1) + fBgoRel.at(gid_dy5).at(0)  - fEvtBgo->fADC.at(gid_dy5);
             if(TMath::Abs(deltaADC_small) > 3*fTotSigmaBgo.at(gid_dy5)){
                     // affected by last event
               continue;
@@ -349,11 +349,11 @@ void DmpAlgCalibrationMips::GetBarIDOfLayer_psd(std::vector<short> &ret,short l,
       if(fEvtPsd->fADC.find(gid_dy) == fEvtPsd->fADC.end()){
         continue;
       }
-      if(fEvtPsd->fADC.at(gid_dy) > 5* fPsdPed.at(gid_dy).at(5)){
+      if(fEvtPsd->fADC.at(gid_dy) > 5* fPsdPed.at(gid_dy).at(1)){
         gid_dy5 = DmpPsdBase::ConstructGlobalDynodeID(l,b,side,5);
         if(fEvtPsd->fADC.find(gid_dy5) != fEvtPsd->fADC.end()){
-          if(fEvtPsd->fADC.at(gid_dy5) > 5*fPsdPed.at(gid_dy5).at(5)){
-            double deltaADC_small = fEvtPsd->fADC.at(gid_dy)*fPsdRel.at(gid_dy5).at(5) + fPsdRel.at(gid_dy5).at(4)  - fEvtPsd->fADC.at(gid_dy5);
+          if(fEvtPsd->fADC.at(gid_dy5) > 5*fPsdPed.at(gid_dy5).at(1)){
+            double deltaADC_small = fEvtPsd->fADC.at(gid_dy)*fPsdRel.at(gid_dy5).at(1) + fPsdRel.at(gid_dy5).at(0)  - fEvtPsd->fADC.at(gid_dy5);
             if(TMath::Abs(deltaADC_small) > 3*fTotSigmaPsd.at(gid_dy5)){
                     // affected by last event
               continue;
