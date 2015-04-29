@@ -11,6 +11,11 @@ BOOST_PYTHON_MODULE(libDmpCalMip){
   using namespace boost::python;
 
   class_<DmpAlgCalibrationMips,boost::noncopyable,bases<DmpVAlg> >("DmpAlgCalibrationMips",init<>())
+     .def("SetPedestalFile",    &DmpAlgCalibrationMips::SetPedestalFile)
+     .def("SetRelationFile",    &DmpAlgCalibrationMips::SetRelationFile)
+     .def("SetCutBarNumber",    &DmpAlgCalibrationMips::SetCutBarNumber)
+     .def("SetCutLayerNumber",  &DmpAlgCalibrationMips::SetCutLayerNumber)
+     .def("SetCutEntries",      &DmpAlgCalibrationMips::SetCutEntries)
     ;
 }
 
