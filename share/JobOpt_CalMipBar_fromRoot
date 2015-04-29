@@ -15,7 +15,7 @@ import libDmpCalMip as DmpCalMip
 
 #-------------------------------------------------------------------
 # Global setting
-DMPSW.Core.SetEventNumber(4000)     # default: -1
+#DMPSW.Core.SetEventNumber(4000)     # default: -1
 #DMPSW.Core.SetStartTime("2014-11-18 20:33:00")     # default: 2013-01-01 00:00:00
 #DMPSW.Core.SetStopTime("2014-11-18 21:44:10")      # default: 2053-01-01 00:00:00
 #DMPSW.Core.LogLevel("Debug")      # Value = {Error | Warning | Info | Debug}. default: Info.
